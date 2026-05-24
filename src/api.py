@@ -3,7 +3,7 @@
 
 import statsapi
 
-def fetch_hitter_stats(season: int = 2026) -> list:
+def fetch_hitter_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
     """Fetch all hitter stats with pagination."""
     all_splits = []
     offset = 0
@@ -15,7 +15,7 @@ def fetch_hitter_stats(season: int = 2026) -> list:
             'group': 'hitting',
             'season': season,
             'gameType': 'R',
-            'playerPool': 'ALL',
+            'playerPool': player_pool,
             'limit': limit,
             'offset': offset,
         })
@@ -34,7 +34,7 @@ def fetch_hitter_stats(season: int = 2026) -> list:
     return all_splits
 
 
-def fetch_pitcher_stats(season: int = 2026) -> list:
+def fetch_pitcher_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
     """Fetch all pitcher stats with pagination."""
     all_splits = []
     offset = 0
@@ -46,7 +46,7 @@ def fetch_pitcher_stats(season: int = 2026) -> list:
             'group': 'pitching',
             'season': season,
             'gameType': 'R',
-            'playerPool': 'ALL',
+            'playerPool': player_pool,
             'limit': limit,
             'offset': offset,
         })
@@ -65,8 +65,8 @@ def fetch_pitcher_stats(season: int = 2026) -> list:
     return all_splits
 
 if __name__ == "__main__":
-    hitters = fetch_hitter_stats()
-    pitchers = fetch_pitcher_stats()
+    hitters = fetch_hitter_stats(player_pool='ALL')
+    pitchers = fetch_pitcher_stats(player_pool='ALL')
     
     print(f"Fetched {len(hitters)} hitter stats")
     print(f"Fetched {len(pitchers)} pitcher stats")
