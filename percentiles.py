@@ -1,4 +1,4 @@
-from mlb_data import get_hitter_stats, get_pitcher_stats
+from api import fetch_hitter_stats, fetch_pitcher_stats
 
 def percentile_inserter (players: list[dict], stat_key: str) -> list[dict]:
     sorted_players = sorted(players, key=lambda p: p['stats'][stat_key], reverse=True)
@@ -7,13 +7,13 @@ def percentile_inserter (players: list[dict], stat_key: str) -> list[dict]:
     return sorted_players
 
 if __name__ == "__main__":
-    hitters = get_hitter_stats()
-    pitchers = get_pitcher_stats()
+    hitters = fetch_hitter_stats(2026)
+    pitchers = fetch_pitcher_stats(2026)
     
-    hitters_with_percentiles = percentile_inserter(hitters, 'AVG')
+    hitters_with_percentiles = percentile_inserter(hitters, 'avg')
     hitters_with_percentiles = percentile_inserter(hitters, 'OPS')
     hitters_with_percentiles = percentile_inserter(hitters, 'HR')
-    pitchers_with_percentiles = percentile_inserter(pitchers, 'IP')
+    pitchers_with_percentiles = percentile_inserter(pitchers, 'SO')
     pitchers_with_percentiles = percentile_inserter(pitchers, 'ERA')
     pitchers_with_percentiles = percentile_inserter(pitchers, 'WHIP')
     
