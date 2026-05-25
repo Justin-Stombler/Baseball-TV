@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
+from data.team_colors import get_team_colors
 from datetime import datetime
 import io
 import os
@@ -51,9 +52,11 @@ def render(player: dict) -> bytes:
     draw.text((10, 8), name, font=f_med, fill=TEXT_PRI)
     draw.text((10, 26), team,  font=f_tiny, fill=TEXT_SEC)
 
+    ##trying to auto-detect team length
+    team_width = draw.textlength(team, font=f_tiny)
+
     ##position
-    px = W - 10 - draw.textlength(position, font=f_med)
-    draw.text((px, 15), position, font=f_med, fill=ACCENT)
+    draw.text((16+team_width, 26), position, font=f_tiny, fill=ACCENT)
 
     ##stats
     
@@ -77,6 +80,11 @@ def render(player: dict) -> bytes:
     draw.rectangle([0, H - 18, W, H], fill=PANEL)
     draw.text((10, H - 18), f"MLB, {formatted_time}",     font=f_tiny, fill=DIM)
     draw.text((W - 10 - draw.textlength("Justin Stombler", font=f_tiny), H - 18), "Justin Stombler", font=f_tiny, fill=DIM)
+
+    ##5.25 - adding logos
+    logo = Image.open(f"logos/{player['team']}.png").convert("RGBA")
+    logo = logo.resize((25, 25))
+    img.paste(logo, (210,10), logo)
 
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=95)
