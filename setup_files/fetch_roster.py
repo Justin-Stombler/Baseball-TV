@@ -138,7 +138,7 @@ if __name__ == "__main__":
     print("Fetching all MLB rosters...")
     data = fetch_all_rosters()
     
-    with open("setup_files/roster.json", "w") as f:
+    with open("data/roster.json", "w") as f:
         json.dump(data, f, indent=2)
     
-    print(f"Saved {len(data)} players to setup_files/roster.json")
+    print(f"Saved {len(data)} players to data/roster.json")

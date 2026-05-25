@@ -28,9 +28,9 @@ def render(player: dict) -> bytes:
     PANEL = (22,  22,  22)
     ACCENT = get_team_colors(team)["primary"]
     POSITION_ACCENT = get_team_colors(team)["secondary"]
-    DIM = (75, 75, 75) ##dark gray, diminished, less important text
+    DIM = (90, 90, 90) ##dark gray, diminished, less important text
     TEXT_PRI = (240, 240, 240) ##near white, important text
-    TEXT_SEC = (130, 130, 130) ##mid gray, secondary text
+    TEXT_SEC = (140, 140, 140) ##mid gray, secondary text
 
     W, H = 240, 240
 
@@ -55,6 +55,7 @@ def render(player: dict) -> bytes:
     draw.text((10, 26), team,  font=f_tiny, fill=TEXT_SEC)
 
     ##trying to auto-detect team length
+    name_width = draw.textlength(name, font=f_med)
     team_width = draw.textlength(team, font=f_tiny)
 
     ##position
@@ -88,6 +89,12 @@ def render(player: dict) -> bytes:
     logo = Image.open(f"data/logos/{player['team']}.png").convert("RGBA")
     logo = logo.resize((25, 25))
     img.paste(logo, (210,10), logo)
+
+    ##5.25 - adding jersey number
+    if player.get('number'):
+        number_str = f"#{player['number']}"
+        draw.text((20+ name_width, 8), number_str, font=f_med, fill=OUTLINE, outline_width=0)
+        draw.text((20+name_width, 8), number_str, font=f_med, fill=TEXT_PRI)
 
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=95)
