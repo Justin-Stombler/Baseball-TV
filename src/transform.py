@@ -50,6 +50,12 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
     
     return players
 
+def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
+    """Get a combined list of hitters and pitchers."""
+    hitters = hitter_transform(season, qualified_only)
+    pitchers = pitcher_transform(season, qualified_only)
+    return hitters + pitchers
+
 if __name__ == "__main__":
     hitters = hitter_transform(qualified_only=True)
     pitchers = pitcher_transform(qualified_only=True)

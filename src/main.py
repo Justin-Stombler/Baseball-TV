@@ -1,17 +1,23 @@
-from transform import hitter_transform
-from transform import pitcher_transform
+from transform import player_list
+from render import render
+from push import push, delete
 import random
-
-hitters = hitter_transform(qualified_only=True)
-pitchers = pitcher_transform(qualified_only=True)
-
-players = hitters + pitchers
+import time
 
 def get_random_player() -> dict:
     """Get a random player from the combined list of hitters and pitchers."""
-    return random.choice(players)
+    return random.choice(player_list())
 
 if __name__ == "__main__":
-    random_player = get_random_player()
-    print(f"Random Player: {random_player['name']} - {random_player['team']} - {random_player['position']}")
-    print(f"Stats: {random_player['stats']}")
+    previous = None
+
+    while True:
+        player = get_random_player()
+        image = render(player)
+        push(image, filename=f"{player['name'].replace(' ', '_')}.jpg")
+        if previous:
+            delete(previous)
+        previous = f"{player['name'].replace(' ', '_')}.jpg"
+        time.sleep(10)
+
+

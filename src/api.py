@@ -14,7 +14,7 @@ def fetch_hitter_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
             'stats': 'season',
             'group': 'hitting',
             'season': season,
-            'gameType': 'R',
+            'gameType': 'R', ##regular season
             'playerPool': player_pool,
             'limit': limit,
             'offset': offset,
@@ -25,7 +25,8 @@ def fetch_hitter_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
             break
             
         all_splits.extend(splits)
-        
+
+        ##detects last page
         if len(splits) < limit:
             break
             
@@ -45,7 +46,7 @@ def fetch_pitcher_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
             'stats': 'season',
             'group': 'pitching',
             'season': season,
-            'gameType': 'R',
+            'gameType': 'R', ##regular season
             'playerPool': player_pool,
             'limit': limit,
             'offset': offset,
