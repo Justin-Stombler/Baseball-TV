@@ -18,10 +18,16 @@ def render(player: dict) -> bytes:
         stat_one = player['stats'].get('ERA')
         stat_two = player['stats'].get('WHIP')
         stat_three = player['stats'].get('SO')
+        percentile_one = player['stats'].get('ERA_pct')
+        percentile_two = player['stats'].get('WHIP_pct')
+        percentile_three = player['stats'].get('SO_pct')
     else:
         stat_one = player['stats'].get('AVG')
         stat_two = player['stats'].get('OPS')
         stat_three = player['stats'].get('HR')
+        percentile_one = player['stats'].get('AVG_pct')
+        percentile_two = player['stats'].get('OPS_pct')
+        percentile_three = player['stats'].get('HR_pct')
 
     BG = (13,  13,  13)
     OUTLINE = (240, 240, 240)
@@ -31,6 +37,9 @@ def render(player: dict) -> bytes:
     DIM = (90, 90, 90) ##dark gray, diminished, less important text
     TEXT_PRI = (240, 240, 240) ##near white, important text
     TEXT_SEC = (140, 140, 140) ##mid gray, secondary text
+    FIRST_PERCENTILE = (0, 255, 0) ##green
+    SECOND_PERCENTILE = (255, 255, 0) ##yellow
+    THIRD_PERCENTILE = (255, 0, 0) ##red
 
     W, H = 240, 240
 
@@ -95,6 +104,23 @@ def render(player: dict) -> bytes:
         number_str = f"#{player['number']}"
         draw.text((20+ name_width, 8), number_str, font=f_med, fill=OUTLINE, outline_width=0)
         draw.text((20+name_width, 8), number_str, font=f_med, fill=TEXT_PRI)
+
+
+    ##percentiles
+
+    percentile_x = 20 ##these are needed for outerbounds
+    percentile_y = 220
+    diff = percentile_y - percentile_x
+    
+    adjusted_one = diff * percentile_one/100 ##prorating the length by percentile based on max length
+    adjusted_two = diff * percentile_two/100
+    adjusted_three = diff * percentile_three/100
+
+    draw.line([(percentile_x, 90), (percentile_x + adjusted_one, 90)], fill=FIRST_PERCENTILE, width=1) ##hell yeah it works
+    draw.line([(percentile_x, 145), (percentile_x + adjusted_two, 145)], fill=SECOND_PERCENTILE, width=1)
+    draw.line([(percentile_x, 200), (percentile_x + adjusted_three, 200)], fill=THIRD_PERCENTILE, width=1)
+
+    
 
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=95)

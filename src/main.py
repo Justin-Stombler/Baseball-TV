@@ -18,4 +18,4 @@ if __name__ == "__main__":
         if previous:
             delete(previous)
         previous = f"{player['name'].replace(' ', '_')}.jpg"
-        time.sleep(10)
+        time.sleep(5)
