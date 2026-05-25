@@ -1,34 +1,19 @@
-from ..transform import player_list
 from .config import STAT_CONFIG
 
+
 def add_percentiles(players: list[dict]) -> list[dict]:
+    """Add percentile fields to each player's stats."""
     for stat_key, config in STAT_CONFIG.items():
-        values = []
+        valid_players = [player for player in players if player['stats'].get(stat_key) is not None]
+        if not valid_players:
+            continue
 
-    for p in players:
-        raw_value = p.get('stats', {}).get(stat_key, 0)
+        reverse = not config.get('ascending', False)
+        sorted_players = sorted(valid_players, key=lambda p: p['stats'][stat_key], reverse=reverse)
+        total = len(sorted_players)
 
-        try:
-            value = float(raw_value)
-        except (ValueError, TypeError):
-            value = 0.0
+        for rank, player in enumerate(sorted_players):
+            pct = round((total - rank) / total * 100, 2)
+            player['stats'][f'{stat_key}_pct'] = pct
 
-        values.append(value)
-        
-        for p in players:
-            raw = float(p['stats'].get(stat_key) or 0)
-            pct = sum(1 for v in values if v <= raw) / len(values) * 100
-            
-            if config["ascending"]:
-                pct = 100 - pct
-                
-            p['stats'][f'{stat_key}_pct'] = round(pct)
-    
     return players
-
-if __name__ == "__main__":
-    players = player_list(season=2026, qualified_only=True)
-
-    players_with_percentiles = add_percentiles(players)
-
-    print(players_with_percentiles[:1])  # Print top player

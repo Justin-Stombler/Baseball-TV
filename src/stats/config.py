@@ -1,8 +1,8 @@
 STAT_CONFIG = {
     "ERA": {"ascending": True},
     "WHIP": {"ascending": True},
-    "strikeOuts": {"ascending": False},
+    "SO": {"ascending": False},
     "OPS": {"ascending": False},
     "AVG": {"ascending": False},
-    "homeRuns": {"ascending": False},
+    "HR": {"ascending": False},
 }

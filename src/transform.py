@@ -4,6 +4,7 @@
 
 from .api import fetch_hitter_stats
 from .api import fetch_pitcher_stats
+from .stats.percentiles import add_percentiles
 import json
 import os
 
@@ -65,11 +66,12 @@ def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Get a combined list of hitters and pitchers."""
     hitters = hitter_transform(season, qualified_only)
     pitchers = pitcher_transform(season, qualified_only)
-    return hitters + pitchers
+
+    hitters_with_percentiles = add_percentiles(hitters)
+    pitchers_with_percentiles = add_percentiles(pitchers)
+
+    return hitters_with_percentiles + pitchers_with_percentiles
 
 if __name__ == "__main__":
-    hitters = hitter_transform(qualified_only=True)
-    pitchers = pitcher_transform(qualified_only=True)
-
-    print(f"Top hitter: {hitters[0]}")
-    print(f"Top pitcher: {pitchers[0]}")
+    players = player_list(season=2026, qualified_only=True)
+    print(players[:1])  # Print top player
