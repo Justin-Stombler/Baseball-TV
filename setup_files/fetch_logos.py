@@ -2,7 +2,10 @@ import requests
 import statsapi
 import os
 
-os.makedirs("logos", exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGOS_DIR = os.path.join(BASE_DIR, "data", "logos")
+
+os.makedirs(LOGOS_DIR, exist_ok=True)
 
 teams = statsapi.get('teams', {'sportId': 1}) #baseball
 
@@ -22,7 +25,7 @@ for team in teams['teams']:
         r = requests.get(url, timeout=10)
         if r.status_code == 200:
             ext = "png" if "midfield" in url else "svg"
-            with open(f"logos/{team_name}.{ext}", 'wb') as f:
+            with open(os.path.join(LOGOS_DIR, f"{team_name}.{ext}"), 'wb') as f:
                 f.write(r.content)
             print(f"saved {team_name} ({ext})")
             saved = True

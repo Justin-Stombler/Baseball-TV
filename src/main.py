@@ -20,4 +20,3 @@ if __name__ == "__main__":
         previous = f"{player['name'].replace(' ', '_')}.jpg"
         time.sleep(10)
 
-

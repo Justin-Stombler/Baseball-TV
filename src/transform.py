@@ -4,6 +4,7 @@
 
 from .api import fetch_hitter_stats
 from .api import fetch_pitcher_stats
+from data.rosters import fetch_roster
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format."""
@@ -16,6 +17,7 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
+            'number': fetch_roster(p['team']['id'], season=season)['roster'][0]['number'],
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
@@ -39,6 +41,7 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
+            'number': fetch_roster(p['team']['id'], season=season)['roster'][0]['number'],
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
@@ -59,3 +62,5 @@ def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
 if __name__ == "__main__":
     hitters = hitter_transform(qualified_only=True)
     pitchers = pitcher_transform(qualified_only=True)
+
+    print(hitters[:3])
