@@ -1,6 +1,6 @@
-from transform import player_list
-from render import render
-from push import push, delete
+from .transform import player_list
+from .render import render
+from .push import push, delete
 import random
 import time
 

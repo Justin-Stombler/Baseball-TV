@@ -25,7 +25,8 @@ def render(player: dict) -> bytes:
 
     BG = (13,  13,  13)
     PANEL = (22,  22,  22)
-    ACCENT = (223, 70,   1)
+    ACCENT = get_team_colors(team)["primary"]
+    POSITION_ACCENT = (223, 70,   1)
     DIM = (50,  50,  50) ##dark gray, diminished, less important text
     TEXT_PRI = (240, 240, 240) ##near white, important text
     TEXT_SEC = (130, 130, 130) ##mid gray, secondary text
@@ -56,7 +57,7 @@ def render(player: dict) -> bytes:
     team_width = draw.textlength(team, font=f_tiny)
 
     ##position
-    draw.text((16+team_width, 26), position, font=f_tiny, fill=ACCENT)
+    draw.text((16+team_width, 26), position, font=f_tiny, fill=POSITION_ACCENT)
 
     ##stats
     
@@ -92,7 +93,7 @@ def render(player: dict) -> bytes:
     return buf.read()
 
 if __name__ == "__main__":
-    from main import get_random_player
+    from .main import get_random_player
     player = get_random_player()
     img_bytes = render(player)
     with open("sample_player_card.jpg", "wb") as f:

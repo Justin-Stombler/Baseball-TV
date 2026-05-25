@@ -2,8 +2,8 @@
 ###1. Transform raw data into specific points to display (see design doc)
 ###2. Leave option to filter for only qualfied players
 
-from api import fetch_hitter_stats
-from api import fetch_pitcher_stats
+from .api import fetch_hitter_stats
+from .api import fetch_pitcher_stats
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format."""
