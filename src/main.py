@@ -1,5 +1,5 @@
-from .transform import player_list
-from .render import render
+from .transforms.player_stats import player_list
+from .render.player_stats import render
 from .push import push, delete
 import random
 import time

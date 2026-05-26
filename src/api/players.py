@@ -1,5 +1,6 @@
-##This pulls all available stats from the MLB Stats API.
-##Broken out into pitcher and hitter.
+##This pulls all available player stats from the MLB Stats API.
+##By hitter and pitcher
+
 
 import statsapi
 

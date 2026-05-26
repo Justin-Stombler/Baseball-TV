@@ -2,21 +2,21 @@
 ###1. Transform raw data into specific points to display (see design doc)
 ###2. Leave option to filter for only qualfied players
 
-from .api import fetch_hitter_stats
-from .api import fetch_pitcher_stats
-from .stats.percentiles import add_percentiles
+from ..api.players import fetch_hitter_stats
+from ..api.players import fetch_pitcher_stats
+from ..stats.percentiles import add_percentiles
 import json
 import os
 
 ##loading roster for number lookup
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 with open(os.path.join(BASE_DIR, "data", "roster.json")) as f:
     roster_list = json.load(f)
 
 rosters = {p['name']: p for p in roster_list} 
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
-    """Transform hitter stats into a more usable format."""
+    """Transform hitter stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
     splits = fetch_hitter_stats(season, player_pool=player_pool)
     players = []
@@ -40,7 +40,7 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
 
 
 def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
-    """Transform pitcher stats into a more usable format."""
+    """Transform pitcher stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
     splits = fetch_pitcher_stats(season, player_pool=player_pool)
     players = []
