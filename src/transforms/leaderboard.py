@@ -2,14 +2,12 @@
 ###2. Will require AL/NL split (it's in api.players)
 ###3. Leave option to filter for only qualfied players
 
-from ..api.players import fetch_hitter_stats
-from ..api.players import fetch_pitcher_stats
+from ..api.players import fetch_hitter_stats, fetch_pitcher_stats
+from ..constants import DATA_DIR
 import json
-import os
 
 ##loading roster for number lookup
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-with open(os.path.join(BASE_DIR, "data", "roster.json")) as f:
+with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
 rosters = {p['name']: p for p in roster_list} 

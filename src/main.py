@@ -1,5 +1,5 @@
 from .transforms.player_stats import player_list
-from .render.player_stats import render
+from .render.player_stats import render_player_stats
 from .push import push, delete
 import random
 import time
@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     while True:
         player = get_random_player()
-        image = render(player)
+        image = render_player_stats(player)
         push(image, filename=f"{player['name'].replace(' ', '_')}.jpg")
         if previous:
             delete(previous)
