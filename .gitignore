@@ -11,3 +11,6 @@ fonts/
 logos/
 
 *.txt
+
+# docker
+.dockerignore
