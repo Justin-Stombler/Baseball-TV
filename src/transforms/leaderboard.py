@@ -32,6 +32,7 @@ def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "av
             'league': p['league']['name'],
             'name': p['player']['fullName'],
             'team': get_team_abbreviation(p['team']['name']),
+            'team_name': p['team']['name'],
             stat: p['stat'].get(stat),
         }
         for p in top_5

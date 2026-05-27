@@ -27,10 +27,11 @@ if __name__ == "__main__":
         league = get_random_league()
         leaderboard = generate_leaderboard(season=2026, league=league, stat=stat)
         img_bytes = render_leaderboard(leaderboard, stat=stat, league=league)
-        push(img_bytes, filename=f"leaderboard_{stat}_{league}.jpg")
+        current_filename = push(img_bytes)
+        print(f"pushed {current_filename} -> stat={stat} league={league}")
         if previous:
             delete(previous)
-        previous = f"leaderboard_{stat}_{league}.jpg"
+        previous = current_filename
         time.sleep(10)
 
     # while True:
