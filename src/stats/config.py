@@ -4,11 +4,11 @@
 ##2) all stats here are on the list of stats that can be randomly called in main.py for rendering the leaderboards
 
 STAT_CONFIG = {
-    "avg":                  {"ascending": False, "type": "hitting",  "label": "Batting Average"},
-    "ops":                  {"ascending": False, "type": "hitting",  "label": "On-base + Slugging"},
+    "avg":                  {"ascending": False, "type": "hitting",  "label": "AVG"},
+    "ops":                  {"ascending": False, "type": "hitting",  "label": "OPS"},
     "obp":                  {"ascending": False, "type": "hitting",  "label": "On-Base %"},
     "slg":                  {"ascending": False, "type": "hitting",  "label": "Slugging %"},
-    "homeRuns":             {"ascending": False, "type": "hitting",  "label": "Home Runs"},
+    "homeRuns":             {"ascending": False, "type": "hitting",  "label": "HR"},
     "runs":                 {"ascending": False, "type": "hitting",  "label": "Runs"},
     "doubles":              {"ascending": False, "type": "hitting",  "label": "Doubles"},
     "triples":              {"ascending": False, "type": "hitting",  "label": "Triples"},
@@ -19,9 +19,9 @@ STAT_CONFIG = {
     "plateAppearances":     {"ascending": False, "type": "hitting",  "label": "Plate Appearances"},
     "babip":                {"ascending": False, "type": "hitting",  "label": "BABIP"},
     "strikeOuts":           {"ascending": True,  "type": "hitting",  "label": "Strikeouts"},
-    "groundIntoDoublePlay": {"ascending": True,  "type": "hitting",  "label": "GIDP"},
+    "groundIntoDoublePlay": {"ascending": False,  "type": "hitting",  "label": "GIDP"},
 
-    "era":                  {"ascending": True,  "type": "pitching", "label": "Earned Run Average"},
+    "era":                  {"ascending": True,  "type": "pitching", "label": "ERA"},
     "whip":                 {"ascending": True,  "type": "pitching", "label": "WHIP"},
     "wins":                 {"ascending": False, "type": "pitching", "label": "Wins"},
     "saves":                {"ascending": False, "type": "pitching", "label": "Saves"},
@@ -35,6 +35,6 @@ STAT_CONFIG = {
     "hitsPer9Inn":          {"ascending": True,  "type": "pitching", "label": "H/9"},
     "homeRunsPer9":         {"ascending": True,  "type": "pitching", "label": "HR/9"},
     "losses":               {"ascending": True,  "type": "pitching", "label": "Losses"},
-    "blownSaves":           {"ascending": True,  "type": "pitching", "label": "Blown Saves"},
+    "blownSaves":           {"ascending": False,  "type": "pitching", "label": "Blown Saves"},
     "earnedRuns":           {"ascending": True,  "type": "pitching", "label": "Earned Runs "},
 }

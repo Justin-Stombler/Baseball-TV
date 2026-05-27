@@ -42,3 +42,5 @@ if __name__ == "__main__":
     #         delete(previous)
     #     previous = f"{player['name'].replace(' ', '_')}.jpg"
     #     time.sleep(5)
+
+##modes?

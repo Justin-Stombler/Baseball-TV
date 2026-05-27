@@ -1,0 +1,6 @@
+services:
+  baseball-tv:
+    build: .
+    restart: always
+    env_file:
+      - .env
