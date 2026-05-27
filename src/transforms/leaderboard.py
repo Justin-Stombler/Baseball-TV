@@ -3,69 +3,41 @@
 ###3. Leave option to filter for only qualfied players
 
 from ..api.players import fetch_hitter_stats, fetch_pitcher_stats
-from ..constants import DATA_DIR
+from data.team_abbreviations import get_team_abbreviation
 import json
 
-##loading roster for number lookup
-with open(DATA_DIR / "roster.json") as f:
-    roster_list = json.load(f)
+def hitter_leaderboards(season: int = 2026, qualified_only: bool = True) -> list[dict]:
+    """Get top 5 hitters for predefined leaderboard stats."""
 
-rosters = {p['name']: p for p in roster_list} 
+    relevant_stats = [['runs', 'doubles', 'triples', 'homeRuns', 'avg', 'ops']]
 
-def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
-    """Transform hitter stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
     splits = fetch_hitter_stats(season, player_pool=player_pool)
-    players = []
-    
+
+    # Ad-hoc test: print all unique stat names from the hitter JSON payload.
     for p in splits:
-        stat = p['stat']
-        players.append({
-            'id': p['player']['id'],
-            'name': p['player']['fullName'],
-            'number': rosters.get(p['player']['fullName'], {}).get('number'),
-            'team': p['team']['name'],
-            'position': p['position']['abbreviation'],
-            'stats': {
-                'AVG': stat.get('avg'),
-                'OPS': stat.get('ops'),
-                'HR': stat.get('homeRuns'),
-            }
-        })
+        for stat_name in p.get('stat', {}).keys():
+            if stat_name in relevant_stats:
+                leaderboard = sorted(splits, key=lambda x: x['stat'].get({stat_name}, 0), reverse=True)[:5]
     
-    return players
+                ##return only player and average for simplicity
+                # leaderboard = [ ##returning dict because render is set up to receive
+                #     {
+                #         'league' : p['league']['name'],
+                #         'name': p['player']['fullName'],
+                #         stat_name: p['stat'].get(stat_name),
+                #         'team': get_team_abbreviation(p['team']['name'])
+                #     }
+                #     for p in leaderboard
+                # ]
+                return leaderboard
 
-
-def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
-    """Transform pitcher stats into a more usable format for stats rendering."""
-    player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_pitcher_stats(season, player_pool=player_pool)
-    players = []
-    
-    for p in splits:
-        stat = p['stat']
-        players.append({
-            'id': p['player']['id'],
-            'name': p['player']['fullName'],
-            'number': rosters.get(p['player']['fullName'], {}).get('number'),
-            'team': p['team']['name'],
-            'position': p['position']['abbreviation'],
-            'stats': {
-                'ERA': stat.get('era'),
-                'WHIP': stat.get('whip'),
-                'SO': stat.get('strikeOuts'),
-            }
-        })
-    
-    return players
-
-def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
-    """Get a combined list of hitters and pitchers."""
-    hitters = hitter_transform(season, qualified_only)
-    pitchers = pitcher_transform(season, qualified_only)
-
-    return hitters + pitchers
+##GOAL IS FUNCTION THAT RETURNS DICT OF TOP 5 BASED ON LEAGUE AND STAT
+##CAN END WITH GENERATE LEADERBOARD FUNCTION
+##THAT CAN THEN BE GIVEN TO RENDER AND TEXT WILL BE LEFT BASED ON 
+##POSITION IN LEADERBOARD AND LEAGUE
+##THEN IN MAIN THE LEAGUE AND STAT CAN BE RANDOMLY CHOSEN FOR VARIETY FOR NOW
 
 if __name__ == "__main__":
-    players = player_list(season=2026, qualified_only=True)
-    print(players[:1])  # Print top player
+    top_averages = hitter_leaderboards()
+    print(top_averages)
