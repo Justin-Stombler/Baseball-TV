@@ -2,8 +2,7 @@
 ###1. Transform raw data into specific points to display (see design doc)
 ###2. Leave option to filter for only qualfied players
 
-from ..api.players import fetch_hitter_stats
-from ..api.players import fetch_pitcher_stats
+from ..api.players import fetch_hitter_stats, fetch_pitcher_stats
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 import json
@@ -29,9 +28,9 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
-                'AVG': stat.get('avg'),
-                'OPS': stat.get('ops'),
-                'HR': stat.get('homeRuns'),
+                'avg': stat.get('avg'),
+                'ops': stat.get('ops'),
+                'homeRuns': stat.get('homeRuns'),
             }
         })
     
@@ -53,9 +52,9 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
-                'ERA': stat.get('era'),
-                'WHIP': stat.get('whip'),
-                'SO': stat.get('strikeOuts'),
+                'era': stat.get('era'),
+                'whip': stat.get('whip'),
+                'pitchingStrikeOuts': stat.get('strikeOuts'),
             }
         })
     
