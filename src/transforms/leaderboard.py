@@ -43,6 +43,6 @@ def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "av
 if __name__ == "__main__":
     import random
     league = random.choice(['AL', 'NL'])
-    stat = random.choice(list(STAT_CONFIG.keys()))
+    stat = 'pitchingStrikeOuts'
     top_averages = generate_leaderboard(league=league, stat=stat)
     print(top_averages)

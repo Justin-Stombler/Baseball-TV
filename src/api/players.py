@@ -56,6 +56,11 @@ def fetch_pitcher_stats(season: int = 2026, player_pool: str = 'ALL') -> list:
         splits = data['stats'][0]['splits']
         if not splits:
             break
+        
+        ##alias strikeOuts -> pitchingStrikeOuts to avoid conflict with hitting strikeOuts
+        for split in splits:
+            if 'strikeOuts' in split['stat']:
+                split['stat']['pitchingStrikeOuts'] = split['stat'].pop('strikeOuts')
             
         all_splits.extend(splits)
         

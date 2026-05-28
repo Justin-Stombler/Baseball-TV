@@ -57,7 +57,7 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
                 'era': stat.get('era'),
                 'whip': stat.get('whip'),
                 'homeRunsPer9': stat.get('homeRunsPer9'),
-                'pitchingStrikeOuts': stat.get('strikeOuts'),
+                'pitchingStrikeOuts': stat.get('pitchingStrikeOuts'),
             }
         })
     
@@ -75,4 +75,7 @@ def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
 
 if __name__ == "__main__":
     players = player_list(season=2026, qualified_only=True)
-    print(players[:1])  # Print top player
+    
+    ##only pitchers
+    players = [p for p in players if p['position'] == 'P']
+    print(players[:5])  # Print top player
