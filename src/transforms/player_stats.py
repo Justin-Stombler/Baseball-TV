@@ -29,9 +29,10 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
             'position': p['position']['abbreviation'],
             'stats': {
                 'avg': stat.get('avg'),
+                'obp': stat.get('obp'),
                 'ops': stat.get('ops'),
                 'homeRuns': stat.get('homeRuns'),
-            }
+                'rbi': stat.get('rbi')},
         })
     
     return players
@@ -52,8 +53,10 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
+                'inningsPitched': stat.get('inningsPitched'),
                 'era': stat.get('era'),
                 'whip': stat.get('whip'),
+                'homeRunsPer9': stat.get('homeRunsPer9'),
                 'pitchingStrikeOuts': stat.get('strikeOuts'),
             }
         })
