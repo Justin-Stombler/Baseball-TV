@@ -12,8 +12,11 @@ def get_random_player() -> dict:
     return random.choice(player_list())
 
 def get_random_stat() -> str:
-    """Get a random stat from the available stats in the config."""
-    return random.choice(list(STAT_CONFIG.keys()))
+    """Get a random stat from the active stats in the config."""
+    active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]
+    if not active_stats:
+        raise ValueError("No active stats configured in STAT_CONFIG")
+    return random.choice(active_stats)
 
 def get_random_league() -> str:
     """Get a random league."""
