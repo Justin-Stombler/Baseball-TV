@@ -23,7 +23,7 @@ def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "av
     league_players = [p for p in league_players if p.get('stat', {}).get(stat) is not None]
 
     direction = STAT_CONFIG.get(stat, {}).get('ascending')
-    top_5 = sorted(league_players, key=lambda x: x['stat'].get(stat, 0), reverse=not direction)[:5]
+    top_5 = sorted(league_players, key=lambda x: float(x['stat'].get(stat, 0)), reverse=not direction)[:5]
 
     ##pull sorting direction from stats config
 
