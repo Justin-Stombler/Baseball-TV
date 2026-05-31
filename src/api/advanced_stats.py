@@ -143,3 +143,5 @@ if __name__ == "__main__":
     pitchers = fetch_all_advanced_pitching(season=2025)
     print(f"Fetched {len(hitters)} advanced hitting splits")
     print(f"Fetched {len(pitchers)} advanced pitching splits")
+    print("Example advanced hitting split:", hitters[0] if hitters else "No data")
+    print("Example advanced pitching split:", pitchers[0] if pitchers else "No data")

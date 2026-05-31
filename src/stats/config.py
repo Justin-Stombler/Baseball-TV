@@ -38,3 +38,23 @@ STAT_CONFIG = {
     "blownSaves":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Blown Saves", "active": False},
     "earnedRuns":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Earned Runs ", "active": True},
 }
+
+HISTORY_CONFIG = {
+    "seasons": 4,
+    "stats": {
+        "gamesPlayed": {"type": "hitting", "label": "G", "active": True},
+        "atBats": {"type": "hitting", "label": "AB", "active": True},
+        "hits": {"type": "hitting", "label": "H", "active": True},
+        "runs": {"type": "hitting", "label": "R", "active": False},
+        "rbi": {"type": "hitting", "label": "RBI", "active": True},
+        "baseOnBalls": {"type": "both", "label": "BB", "active": False},
+        "stolenBases": {"type": "hitting", "label": "SB", "active": True},
+        "gamesPitched": {"type": "pitching", "label": "G", "active": True},
+        "inningsPitched": {"type": "pitching", "label": "IP", "active": True},
+        "wins": {"type": "pitching", "label": "W", "active": True},
+        "losses": {"type": "pitching", "label": "L", "active": True},
+        "era": {"type": "pitching", "label": "ERA", "active": True},
+        "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": False},
+    }
+}
+

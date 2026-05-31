@@ -48,8 +48,8 @@ if __name__ == "__main__":
             if bio:
                 previous = display(render_player_profiles(bio), pp["duration"], previous)
 
-        for _ in range(lb["count"]):
-            stat = get_random_stat()
-            for league in lb["leagues"]:
-                leaderboard = generate_leaderboard(league=league, stat=stat)
-                previous = display(render_leaderboard(leaderboard, stat=stat, league=league), lb["duration"], previous, filename=f"{stat}_{league}.jpg")
+        # for _ in range(lb["count"]):
+        #     stat = get_random_stat()
+        #     for league in lb["leagues"]:
+        #         leaderboard = generate_leaderboard(league=league, stat=stat)
+        #         previous = display(render_leaderboard(leaderboard, stat=stat, league=league), lb["duration"], previous, filename=f"{stat}_{league}.jpg")
