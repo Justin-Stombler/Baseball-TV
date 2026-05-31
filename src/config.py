@@ -4,6 +4,7 @@
 ##2) all stats here are on the list of stats that can be randomly called in main.py for rendering the leaderboards
 
 DISPLAY_CONFIG = {
-    "player_stats": {"duration": 5, "count": 6},
+    "player_stats": {"duration": 5, "count": 3},
+    "player_profiles": {"duration": 5, "count": 3},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},
 }

@@ -2,7 +2,7 @@
 ###1. Transform raw data into specific points to display (see design doc)
 ###2. Leave option to filter for only qualfied players
 
-from ..api.players import fetch_hitter_stats, fetch_pitcher_stats
+from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 import json

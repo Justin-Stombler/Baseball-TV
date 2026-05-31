@@ -2,7 +2,7 @@
 ###2. Will require AL/NL split (it's in api.players)
 ###3. Leave option to filter for only qualfied players
 
-from ..api.players import fetch_hitter_stats, fetch_pitcher_stats
+from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from data.team_abbreviations import get_team_abbreviation
 from ..stats.config import STAT_CONFIG
 
