@@ -14,3 +14,8 @@ logos/
 
 # docker
 .dockerignore
+
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
