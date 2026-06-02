@@ -7,7 +7,10 @@ from .player_stats import player_list
 from data.team_abbreviations import get_team_abbreviation
 
 
-def bio_list(season: int = 2026, qualified_only: bool = True) -> list[dict]:
+def bio_list(
+    season: int = 2026,
+    qualified_only: bool = True,
+) -> list[dict]:
     """Fetch bios only for qualified players (same pool as player_stats)."""
     qualified_players = player_list(season, qualified_only)
     qualified_map = {p['id']: p for p in qualified_players}
@@ -27,6 +30,7 @@ def bio_list(season: int = 2026, qualified_only: bool = True) -> list[dict]:
             'id': bio.get('id'),
             'name': bio.get('fullName'),
             'team': team_name,
+            'teamAbbreviation': get_team_abbreviation(team_name),
             'primaryNumber': bio.get('primaryNumber'),
             'position': bio.get('primaryPosition', {}).get('abbreviation'),
             'age': bio.get('currentAge'),
@@ -39,6 +43,9 @@ def bio_list(season: int = 2026, qualified_only: bool = True) -> list[dict]:
             'birthStateProvince': bio.get('birthStateProvince'),
             'birthCountry': bio.get('birthCountry'),
             'mlbDebutDate': bio.get('mlbDebutDate'),
+            'mlbBirthYear': bio.get('birthDate', '')[:4] if bio.get('birthDate') else None,
+            'mlbDebutYear': bio.get('mlbDebutDate', '')[:4] if bio.get('mlbDebutDate') else None,
+            'draftYear': bio.get('draftYear'),
             'season': season,
         })
 

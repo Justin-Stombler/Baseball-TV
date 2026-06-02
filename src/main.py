@@ -1,5 +1,6 @@
 from .transforms.player_stats import player_list
 from .transforms.player_bios import bio_list
+from .transforms.player_history import player_history
 from .transforms.leaderboard import generate_leaderboard
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
@@ -9,22 +10,6 @@ from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
 import random
 import time
-
-##preload both lists once at startup
-_players = player_list()
-_bios = bio_list()
-_bio_by_id = {b['id']: b for b in _bios}
-
-def get_random_player() -> tuple[dict, dict]:
-    """Get a random player's stats dict and matching bio dict."""
-    player = random.choice(_players)
-    bio = _bio_by_id.get(player['id'])
-    return player, bio
-
-def get_random_stat() -> str:
-    """Get a random stat from the active stats in the config."""
-    active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]
-    return random.choice(active_stats)
 
 def display(image: bytes, duration: int, previous: str | None, filename: str = None) -> str:
     """Push image, delete previous, wait duration. Returns current filename."""
@@ -37,19 +22,35 @@ def display(image: bytes, duration: int, previous: str | None, filename: str = N
 if __name__ == "__main__":
     ps = DISPLAY_CONFIG["player_stats"]
     pp = DISPLAY_CONFIG["player_profiles"]
+    history_count = pp.get("seasons")
     lb = DISPLAY_CONFIG["leaderboard"]
     previous = None
 
     while True:
+        ##Load players and bios fresh for each cycle
+        players = player_list()
+        bios = bio_list()
+        bio_by_id = {b['id']: b for b in bios}
+        
         ##show stat card then profile card for each player
         for _ in range(ps["count"]):
-            player, bio = get_random_player()
+            player = random.choice(players)
             previous = display(render_player_stats(player), ps["duration"], previous)
+            
+            bio = bio_by_id.get(player['id'])
             if bio:
-                previous = display(render_player_profiles(bio), pp["duration"], previous)
+                # Generate history just-in-time for this one profile
+                history_dict = player_history([bio], count=history_count)
+                bio = {**bio, 'history': history_dict.get(player['id'], [])}
+                try:
+                    profile_bytes = render_player_profiles(bio)
+                    previous = display(profile_bytes, pp["duration"], previous)
+                except Exception as e:
+                    print(f"Error rendering profile for {bio.get('name')}: {e}")
 
-        # for _ in range(lb["count"]):
-        #     stat = get_random_stat()
-        #     for league in lb["leagues"]:
-        #         leaderboard = generate_leaderboard(league=league, stat=stat)
-        #         previous = display(render_leaderboard(leaderboard, stat=stat, league=league), lb["duration"], previous, filename=f"{stat}_{league}.jpg")
+        for _ in range(lb["count"]):
+            active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]
+            stat = random.choice(active_stats)
+            for league in lb["leagues"]:
+                leaderboard = generate_leaderboard(league=league, stat=stat)
+                previous = display(render_leaderboard(leaderboard, stat=stat, league=league), lb["duration"], previous, filename=f"{stat}_{league}.jpg")

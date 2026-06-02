@@ -5,6 +5,6 @@
 
 DISPLAY_CONFIG = {
     "player_stats": {"duration": 5, "count": 3},
-    "player_profiles": {"duration": 5, "count": 3},
+    "player_profiles": {"duration": 5, "count": 3, "seasons": 5},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},
 }

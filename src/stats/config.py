@@ -40,21 +40,23 @@ STAT_CONFIG = {
 }
 
 HISTORY_CONFIG = {
-    "seasons": 4,
+    "seasons": 5,
     "stats": {
+        "team": {"type": "both", "label": "TEAM", "active": True},
         "gamesPlayed": {"type": "hitting", "label": "G", "active": True},
         "atBats": {"type": "hitting", "label": "AB", "active": True},
         "hits": {"type": "hitting", "label": "H", "active": True},
+        "homeRuns": {"type": "hitting", "label": "HR", "active": True},
         "runs": {"type": "hitting", "label": "R", "active": False},
         "rbi": {"type": "hitting", "label": "RBI", "active": True},
         "baseOnBalls": {"type": "both", "label": "BB", "active": False},
-        "stolenBases": {"type": "hitting", "label": "SB", "active": True},
+        "stolenBases": {"type": "hitting", "label": "SB", "active": False},
         "gamesPitched": {"type": "pitching", "label": "G", "active": True},
-        "inningsPitched": {"type": "pitching", "label": "IP", "active": True},
         "wins": {"type": "pitching", "label": "W", "active": True},
         "losses": {"type": "pitching", "label": "L", "active": True},
+        "inningsPitched": {"type": "pitching", "label": "IP", "active": False},
+        "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": True},
         "era": {"type": "pitching", "label": "ERA", "active": True},
-        "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": False},
     }
 }
 
