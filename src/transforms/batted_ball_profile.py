@@ -2,7 +2,7 @@
 ###it will use same UI and stats as player_stats, so output needs to be in same format
 ###the question here is which stats?
 
-from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
+from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 import json
@@ -16,7 +16,7 @@ rosters = {p['name']: p for p in roster_list}
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_hitter_stats(season, player_pool=player_pool)
+    splits = fetch_advanced_hitting(season, player_pool=player_pool)
     players = []
     
     for p in splits:
@@ -41,7 +41,7 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
 def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_pitcher_stats(season, player_pool=player_pool)
+    splits = fetch_advanced_pitching(season, player_pool=player_pool)
     players = []
     
     for p in splits:

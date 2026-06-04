@@ -1,3 +1,4 @@
+from pathlib import Path
 import statsapi
 
 def fetch_advanced_hitting(season: int = 2026, player_pool: str = 'ALL') -> list:
@@ -65,6 +66,7 @@ def fetch_advanced_pitching(season: int = 2026) -> list:
 if __name__ == "__main__":
     hitters = fetch_advanced_hitting()
     pitchers = fetch_advanced_pitching()
+
     print(f"Fetched {len(hitters)} advanced hitting splits")
     print(f"Fetched {len(pitchers)} advanced pitching splits")
     print("Example advanced hitting split:", hitters[0] if hitters else "No data")

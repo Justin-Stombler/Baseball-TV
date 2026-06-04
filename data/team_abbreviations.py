@@ -3,7 +3,7 @@ TEAM_ABBREVIATIONS = {
     "Baltimore Orioles":       "BAL",
     "Boston Red Sox":          "BOS",
     "New York Yankees":        "NYY",
-    "Tampa Bay Rays":          "TB",
+    "Tampa Bay Rays":          "TBR",
     "Toronto Blue Jays":       "TOR",
     "Chicago White Sox":       "CWS",
     "Cleveland Guardians":     "CLE",
