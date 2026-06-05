@@ -32,7 +32,7 @@ def fetch_advanced_hitting(season: int = 2026, player_pool: str = 'ALL') -> list
     return all_splits
 
 
-def fetch_advanced_pitching(season: int = 2026) -> list:
+def fetch_advanced_pitching(season: int = 2026, player_pool: str = 'ALL') -> list:
     """Fetch seasonAdvanced pitching stats for a player."""
 
     all_splits = []
@@ -46,6 +46,7 @@ def fetch_advanced_pitching(season: int = 2026) -> list:
             'group': 'pitching',
             'season': season,
             'gameType': 'R',
+            'playerPool': player_pool,
             'limit': limit,
             'offset': offset
         })

@@ -7,11 +7,13 @@ from src.push import push, delete
 from src.render.leaderboard import render_leaderboard
 from src.render.player_profiles import render_player_profiles
 from src.render.player_stats import render_player_stats
+from src.render.batted_ball_profile import render_batted_ball_profile
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
 from src.transforms.player_history import player_history
 from src.transforms.player_stats import player_list
+from src.transforms.batted_ball_profile import hitter_bb_profile, pitcher_bb_profile
 
 
 def display(image: bytes, duration: int, previous: str | None, filename: str | None = None) -> str:
@@ -69,6 +71,14 @@ def run_leaderboard_test(previous: str | None) -> str:
     print(f"Pushed mode: leaderboard ({league}, {stat})")
     return current
 
+def run_batted_ball_profile_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["batted_ball_profile"]
+    players = hitter_bb_profile() + pitcher_bb_profile()
+    player = random.choice(players)
+    current = display(render_batted_ball_profile(player), cfg["duration"], previous=previous)
+    print("Pushed mode: batted_ball_profile")
+    return current
+
 
 def choose_mode() -> str:
     while True:
@@ -76,13 +86,14 @@ def choose_mode() -> str:
         print("1) player_stats")
         print("2) player_profiles")
         print("3) leaderboard")
-        raw_choice = input("Enter 1, 2, or 3: ").strip()
+        print("4) batted_ball_profile")
+        raw_choice = input("Enter 1, 2, 3, or 4: ").strip()
 
-        match = re.search(r"[123]", raw_choice)
+        match = re.search(r"[1234]", raw_choice)
         if match:
             return match.group(0)
 
-        print("Invalid choice. Enter 1, 2, or 3.")
+        print("Invalid choice. Enter 1, 2, 3, or 4.")
 
 
 def main() -> None:
@@ -94,8 +105,10 @@ def main() -> None:
             previous = run_player_stats_test(previous)
         elif choice == "2":
             previous = run_player_profiles_test(previous)
-        else:
+        elif choice == "3":
             previous = run_leaderboard_test(previous)
+        elif choice == "4":
+            previous = run_batted_ball_profile_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause
         time.sleep(5)

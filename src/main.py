@@ -2,9 +2,11 @@ from .transforms.player_stats import player_list
 from .transforms.player_bios import bio_list
 from .transforms.player_history import player_history
 from .transforms.leaderboard import generate_leaderboard
+from .transforms.batted_ball_profile import player_list as batted_ball_player_list
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
+from .render.batted_ball_profile import render_batted_ball_profile
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
@@ -24,12 +26,14 @@ if __name__ == "__main__":
     pp = DISPLAY_CONFIG["player_profiles"]
     history_count = pp.get("seasons")
     lb = DISPLAY_CONFIG["leaderboard"]
+    bbp = DISPLAY_CONFIG["batted_ball_profile"]
     previous = None
 
     while True:
         ##Load players and bios fresh for each cycle
         players = player_list()
         bios = bio_list()
+        batted_ball_profiles = batted_ball_player_list()
         bio_by_id = {b['id']: b for b in bios}
         
         ##show stat card then profile card for each player
@@ -37,6 +41,16 @@ if __name__ == "__main__":
             player = random.choice(players)
             previous = display(render_player_stats(player), ps["duration"], previous)
             
+            ##i want to sohw the batted ball profile for the player used above
+            batted_ball_player_list = {p['id']: p for p in batted_ball_profiles}
+            bbp_player = batted_ball_player_list.get(player['id'])
+            if bbp_player:
+                try:
+                    bbp_bytes = render_batted_ball_profile(bbp_player)
+                    previous = display(bbp_bytes, bbp["duration"], previous)
+                except Exception as e:
+                    print(f"Error rendering batted ball profile for {bbp_player.get('name')}: {e}")
+
             bio = bio_by_id.get(player['id'])
             if bio:
                 # Generate history just-in-time for this one profile

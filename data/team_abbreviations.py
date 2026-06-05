@@ -30,6 +30,7 @@ TEAM_ABBREVIATIONS = {
     "Los Angeles Dodgers":     "LAD",
     "San Diego Padres":        "SDP",
     "San Francisco Giants":    "SFG",
+    "Oakland Athletics":       "OAK",
 }
 
 def get_team_abbreviation(team_name: str) -> str:

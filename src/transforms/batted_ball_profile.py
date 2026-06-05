@@ -13,7 +13,7 @@ with open(DATA_DIR / "roster.json") as f:
 
 rosters = {p['name']: p for p in roster_list} 
 
-def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
+def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
     splits = fetch_advanced_hitting(season, player_pool=player_pool)
@@ -28,17 +28,34 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
-                'avg': stat.get('avg'),
-                'obp': stat.get('obp'),
-                'ops': stat.get('ops'),
-                'homeRuns': stat.get('homeRuns'),
-                'rbi': stat.get('rbi')},
+                'totalSwings': stat.get('totalSwings'),
+                'swingAndMisses': stat.get('swingAndMisses'),
+                'ballsInPlay': stat.get('ballsInPlay'),
+                'popOuts': stat.get('popOuts'),
+                'flyOuts': stat.get('flyOuts'),
+                'lineOuts': stat.get('lineOuts'),
+                'groundOuts': stat.get('groundOuts'),
+                'flyHits': stat.get('flyHits'),
+                'popHits': stat.get('popHits'),
+                'lineHits': stat.get('lineHits'),
+                'groundHits': stat.get('groundHits'),
+                ##i want average for all 4 types and also percentage of occurence
+                'popAverage': stat.get('popHits') / (stat.get('popOuts') + stat.get('popHits')) if stat.get('popOuts') + stat.get('popHits') > 0 else None,
+                'flyAverage': stat.get('flyHits') / (stat.get('flyOuts') + stat.get('flyHits')) if stat.get('flyOuts') + stat.get('flyHits') > 0 else None,
+                'lineAverage': stat.get('lineHits') / (stat.get('lineOuts') + stat.get('lineHits')) if stat.get('lineOuts') + stat.get('lineHits') > 0 else None,
+                'groundAverage': stat.get('groundHits') / (stat.get('groundOuts') + stat.get('groundHits')) if stat.get('groundOuts') + stat.get('groundHits') > 0 else None,
+                ## so above is success but below is distibution
+                'popRate': (stat.get('popOuts') + stat.get('popHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'flyRate': (stat.get('flyOuts') + stat.get('flyHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'lineRate': (stat.get('lineOuts') + stat.get('lineHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'groundRate': (stat.get('groundOuts') + stat.get('groundHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+            },
         })
-    
+
     return players
 
 
-def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
+def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher stats into a more usable format for stats rendering."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
     splits = fetch_advanced_pitching(season, player_pool=player_pool)
@@ -53,25 +70,41 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
-                'inningsPitched': stat.get('inningsPitched'),
-                'era': stat.get('era'),
-                'whip': stat.get('whip'),
-                'homeRunsPer9': stat.get('homeRunsPer9'),
-                'pitchingStrikeOuts': stat.get('pitchingStrikeOuts'),
-            }
+                'totalSwings': stat.get('totalSwings'),
+                'swingAndMisses': stat.get('swingAndMisses'),
+                'ballsInPlay': stat.get('ballsInPlay'),
+                'popOuts': stat.get('popOuts'),
+                'lineOuts': stat.get('lineOuts'),
+                'groundOuts': stat.get('groundOuts'),
+                'flyHits': stat.get('flyHits'),
+                'popHits': stat.get('popHits'),
+                'lineHits': stat.get('lineHits'),
+                'groundHits': stat.get('groundHits'),
+                ##i want average for all 4 types and also percentage of occurence
+                'popAverage': stat.get('popHits') / (stat.get('popOuts') + stat.get('popHits')) if stat.get('popOuts') + stat.get('popHits') > 0 else None,
+                'flyAverage': stat.get('flyHits') / (stat.get('flyOuts') + stat.get('flyHits')) if stat.get('flyOuts') + stat.get('flyHits') > 0 else None,
+                'lineAverage': stat.get('lineHits') / (stat.get('lineOuts') + stat.get('lineHits')) if stat.get('lineOuts') + stat.get('lineHits') > 0 else None,
+                'groundAverage': stat.get('groundHits') / (stat.get('groundOuts') + stat.get('groundHits')) if stat.get('groundOuts') + stat.get('groundHits') > 0 else None,
+                ## so above is success but below is distibution
+                'popRate': (stat.get('popOuts') + stat.get('popHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'flyRate': (stat.get('flyOuts') + stat.get('flyHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'lineRate': (stat.get('lineOuts') + stat.get('lineHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+                'groundRate': (stat.get('groundOuts') + stat.get('groundHits')) / stat.get('ballsInPlay') if stat.get('ballsInPlay') > 0 else None,
+
+            },
         })
     
     return players
 
 def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Get a combined list of hitters and pitchers."""
-    hitters = hitter_transform(season, qualified_only)
-    pitchers = pitcher_transform(season, qualified_only)
+    hitters = hitter_bb_profile(season, qualified_only)
+    pitchers = pitcher_bb_profile(season, qualified_only)
 
-    hitters_with_percentiles = add_percentiles(hitters)
-    pitchers_with_percentiles = add_percentiles(pitchers)
+    # hitters_with_percentiles = add_percentiles(hitters)
+    # pitchers_with_percentiles = add_percentiles(pitchers)
 
-    return hitters_with_percentiles + pitchers_with_percentiles
+    return hitters + pitchers
 
 if __name__ == "__main__":
     players = player_list(season=2026, qualified_only=True)
