@@ -8,4 +8,5 @@ DISPLAY_CONFIG = {
     "player_profiles": {"duration": 7, "count": 3, "seasons": 5},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},
     "batted_ball_profile": {"duration": 5, "count": 3},
+    "stings": {"duration": 5, "count": 1},
 }

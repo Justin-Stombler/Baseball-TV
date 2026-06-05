@@ -7,6 +7,7 @@ from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
 from .render.batted_ball_profile import render_batted_ball_profile
+from .render.stings import render_sting, stings
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     history_count = pp.get("seasons")
     lb = DISPLAY_CONFIG["leaderboard"]
     bbp = DISPLAY_CONFIG["batted_ball_profile"]
+    stings_cfg = DISPLAY_CONFIG["stings"]
     previous = None
 
     while True:
@@ -35,6 +37,11 @@ if __name__ == "__main__":
         bios = bio_list()
         batted_ball_profiles = batted_ball_player_list()
         bio_by_id = {b['id']: b for b in bios}
+
+        for _ in range(stings_cfg["count"]):
+            sting_text = random.choice(stings)
+            previous = display(render_sting(sting_text), stings_cfg["duration"], previous=previous)
+            print("Pushed mode: stings")
         
         ##show stat card then profile card for each player
         for _ in range(ps["count"]):
@@ -42,8 +49,8 @@ if __name__ == "__main__":
             previous = display(render_player_stats(player), ps["duration"], previous)
             
             ##i want to sohw the batted ball profile for the player used above
-            batted_ball_player_list = {p['id']: p for p in batted_ball_profiles}
-            bbp_player = batted_ball_player_list.get(player['id'])
+            batted_ball_players_by_id = {p['id']: p for p in batted_ball_profiles}
+            bbp_player = batted_ball_players_by_id.get(player['id'])
             if bbp_player:
                 try:
                     bbp_bytes = render_batted_ball_profile(bbp_player)
@@ -61,6 +68,11 @@ if __name__ == "__main__":
                     previous = display(profile_bytes, pp["duration"], previous)
                 except Exception as e:
                     print(f"Error rendering profile for {bio.get('name')}: {e}")
+
+        for _ in range(stings_cfg["count"]):
+            sting_text = random.choice(stings)
+            previous = display(render_sting(sting_text), stings_cfg["duration"], previous=previous)
+            print("Pushed mode: stings")
 
         for _ in range(lb["count"]):
             active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]

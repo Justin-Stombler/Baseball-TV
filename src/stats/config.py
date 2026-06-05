@@ -53,10 +53,10 @@ HISTORY_CONFIG = {
         "baseOnBalls": {"type": "both", "label": "BB", "active": False},
         "stolenBases": {"type": "hitting", "label": "SB", "active": False},
         "gamesPitched": {"type": "pitching", "label": "GP ", "active": True},
-        "wins": {"type": "pitching", "label": "W", "active": True},
-        "losses": {"type": "pitching", "label": "L", "active": True},
-        "inningsPitched": {"type": "pitching", "label": "IP", "active": False},
-        "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": False},
+        "wins": {"type": "pitching", "label": "W", "active": False},
+        "losses": {"type": "pitching", "label": "L", "active": False},
+        "inningsPitched": {"type": "pitching", "label": "IP", "active": True},
+        "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": True},
         "era": {"type": "pitching", "label": "ERA", "active": True},
     }
 }

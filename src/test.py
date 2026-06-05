@@ -8,6 +8,7 @@ from src.render.leaderboard import render_leaderboard
 from src.render.player_profiles import render_player_profiles
 from src.render.player_stats import render_player_stats
 from src.render.batted_ball_profile import render_batted_ball_profile
+from src.render.stings import render_sting, stings
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
@@ -79,6 +80,13 @@ def run_batted_ball_profile_test(previous: str | None) -> str:
     print("Pushed mode: batted_ball_profile")
     return current
 
+def run_sting_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["stings"]
+    sting_text = random.choice(stings)
+    current = display(render_sting(sting_text), cfg["duration"], previous=previous)
+    print("Pushed mode: stings")
+    return current
+
 
 def choose_mode() -> str:
     while True:
@@ -87,13 +95,14 @@ def choose_mode() -> str:
         print("2) player_profiles")
         print("3) leaderboard")
         print("4) batted_ball_profile")
-        raw_choice = input("Enter 1, 2, 3, or 4: ").strip()
+        print("5) stings")
+        raw_choice = input("Enter 1, 2, 3, 4, or 5: ").strip()
 
-        match = re.search(r"[1234]", raw_choice)
+        match = re.search(r"[12345]", raw_choice)
         if match:
             return match.group(0)
 
-        print("Invalid choice. Enter 1, 2, 3, or 4.")
+        print("Invalid choice. Enter 1, 2, 3, 4, or 5.")
 
 
 def main() -> None:
@@ -109,6 +118,8 @@ def main() -> None:
             previous = run_leaderboard_test(previous)
         elif choice == "4":
             previous = run_batted_ball_profile_test(previous)
+        elif choice == "5":
+            previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause
         time.sleep(5)
