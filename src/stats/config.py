@@ -20,6 +20,14 @@ STAT_CONFIG = {
     "babip":                {"ascending": False, "type": "hitting",  "agg": "rate", "label": "BABIP", "active": True},
     "strikeOuts":           {"ascending": True,  "type": "hitting",  "agg": "sum",  "label": "Strikeouts", "active": True},
     "groundIntoDoublePlay": {"ascending": False, "type": "hitting",  "agg": "sum",  "label": "GIDP", "active": True},
+    "xba":                   {"ascending": False, "type": "hitting",  "agg": "rate", "label": "xBA", "active": False},
+    "slg":                   {"ascending": False, "type": "hitting",  "agg": "rate", "label": "SLG", "active": False},
+    'xslg':                  {"ascending": False, "type": "hitting",  "agg": "rate", "label": "xSLG", "active": False},
+    "woba":                  {"ascending": False, "type": "hitting",  "agg": "rate", "label": "wOBA", "active": False},
+    'xwoba':                 {"ascending": False, "type": "hitting",  "agg": "rate", "label": "xwOBA", "active": False},
+    'exit_velocity':         {"ascending": False, "type": "hitting",  "agg": "rate", "label": "AVG. EV", "active": False},
+    'barrel_rate':          {"ascending": False, "type": "hitting",  "agg": "rate", "label": "BARREL RATE", "active": False},
+    'avg_distance':         {"ascending": False, "type": "hitting",  "agg": "rate", "label": "AVG. DIST", "active": False},
 
     "era":                  {"ascending": True,  "type": "pitching", "agg": "rate", "label": "ERA", "active": True},
     "whip":                 {"ascending": True,  "type": "pitching", "agg": "rate", "label": "WHIP", "active": True},
@@ -37,6 +45,15 @@ STAT_CONFIG = {
     "losses":               {"ascending": True,  "type": "pitching", "agg": "sum",  "label": "Losses", "active": True},
     "blownSaves":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Blown Saves", "active": False},
     "earnedRuns":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Earned Runs ", "active": True},
+    "xera":                 {"ascending": True,  "type": "pitching", "agg": "rate", "label": "xERA", "active": False},
+    "woba_against":                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "wOBA", "active": False},
+    'xwoba_against':                 {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xwOBA", "active": False},
+    'xba_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xBA", "active": False},
+    'xslg_against':                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xSLG", "active": False},
+    'slg_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "SLG", "active": False},
+    'exit_velocity_against':         {"ascending": True, "type": "pitching",  "agg": "rate", "label": "AVG. EV", "active": False},
+    'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL %", "active": False},
+    'avg_distance':         {"ascending": False, "type": "pitching",  "agg": "rate", "label": "AVG. DIST", "active": False},
 }
 
 HISTORY_CONFIG = {

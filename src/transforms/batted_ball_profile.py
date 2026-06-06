@@ -4,6 +4,7 @@
 
 from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
 from ..constants import DATA_DIR
+from .statcast_batting import expected_stats_list
 from ..stats.percentiles import add_percentiles
 import json
 
@@ -100,11 +101,18 @@ def player_list (season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Get a combined list of hitters and pitchers."""
     hitters = hitter_bb_profile(season, qualified_only)
     pitchers = pitcher_bb_profile(season, qualified_only)
+    expected_players = expected_stats_list(season, qualified_only)
+    expected_by_id = {p.get('id'): p.get('stats', {}) for p in expected_players}
 
     # hitters_with_percentiles = add_percentiles(hitters)
     # pitchers_with_percentiles = add_percentiles(pitchers)
 
-    return hitters + pitchers
+    players = hitters + pitchers
+    for player in players:
+        expected_stats = expected_by_id.get(player.get('id'), {})
+        player['stats'].update(expected_stats)
+
+    return players
 
 if __name__ == "__main__":
     players = player_list(season=2026, qualified_only=True)

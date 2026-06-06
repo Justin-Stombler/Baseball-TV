@@ -8,13 +8,15 @@ from src.render.leaderboard import render_leaderboard
 from src.render.player_profiles import render_player_profiles
 from src.render.player_stats import render_player_stats
 from src.render.batted_ball_profile import render_batted_ball_profile
+from src.render.statcast_data import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
 from src.transforms.player_history import player_history
 from src.transforms.player_stats import player_list
-from src.transforms.batted_ball_profile import hitter_bb_profile, pitcher_bb_profile
+from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
+from src.transforms.statcast_data import expected_stats_list
 
 
 def display(image: bytes, duration: int, previous: str | None, filename: str | None = None) -> str:
@@ -74,7 +76,7 @@ def run_leaderboard_test(previous: str | None) -> str:
 
 def run_batted_ball_profile_test(previous: str | None) -> str:
     cfg = DISPLAY_CONFIG["batted_ball_profile"]
-    players = hitter_bb_profile() + pitcher_bb_profile()
+    players = batted_ball_player_list()
     player = random.choice(players)
     current = display(render_batted_ball_profile(player), cfg["duration"], previous=previous)
     print("Pushed mode: batted_ball_profile")
@@ -87,6 +89,13 @@ def run_sting_test(previous: str | None) -> str:
     print("Pushed mode: stings")
     return current
 
+def run_statcast_data_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["statcast"]
+    players = expected_stats_list()
+    player = random.choice(players)
+    current = display(render_statcast_data(player), cfg["duration"], previous=previous)
+    print("Pushed mode: statcast")
+    return current
 
 def choose_mode() -> str:
     while True:
@@ -95,14 +104,15 @@ def choose_mode() -> str:
         print("2) player_profiles")
         print("3) leaderboard")
         print("4) batted_ball_profile")
-        print("5) stings")
-        raw_choice = input("Enter 1, 2, 3, 4, or 5: ").strip()
+        print("5) statcast")
+        print("6) stings")
+        raw_choice = input("Enter 1, 2, 3, 4, 5, or 6: ").strip()
 
-        match = re.search(r"[12345]", raw_choice)
+        match = re.search(r"[123456]", raw_choice)
         if match:
             return match.group(0)
 
-        print("Invalid choice. Enter 1, 2, 3, 4, or 5.")
+        print("Invalid choice. Enter 1, 2, 3, 4, 5, or 6.")
 
 
 def main() -> None:
@@ -119,6 +129,8 @@ def main() -> None:
         elif choice == "4":
             previous = run_batted_ball_profile_test(previous)
         elif choice == "5":
+            previous = run_statcast_data_test(previous)
+        elif choice == "6":
             previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause

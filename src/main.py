@@ -3,10 +3,12 @@ from .transforms.player_bios import bio_list
 from .transforms.player_history import player_history
 from .transforms.leaderboard import generate_leaderboard
 from .transforms.batted_ball_profile import player_list as batted_ball_player_list
+from .transforms.statcast_batting import expected_stats_list
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
 from .render.batted_ball_profile import render_batted_ball_profile
+from .render.statcast_batting import render_statcast_batting
 from .render.stings import render_sting, stings
 from .push import push, delete
 from .config import DISPLAY_CONFIG
@@ -28,6 +30,7 @@ if __name__ == "__main__":
     history_count = pp.get("seasons")
     lb = DISPLAY_CONFIG["leaderboard"]
     bbp = DISPLAY_CONFIG["batted_ball_profile"]
+    sb = DISPLAY_CONFIG["statcast_batting"]
     stings_cfg = DISPLAY_CONFIG["stings"]
     previous = None
 
@@ -47,7 +50,17 @@ if __name__ == "__main__":
         for _ in range(ps["count"]):
             player = random.choice(players)
             previous = display(render_player_stats(player), ps["duration"], previous)
-            
+
+            ##show statcast batting profile for the player used above
+            statcast_batting_players_by_id = {p['id']: p for p in expected_stats_list()}
+            sb_player = statcast_batting_players_by_id.get(player['id'])
+            if sb_player:
+                try:
+                    sb_bytes = render_statcast_batting(sb_player)
+                    previous = display(sb_bytes, sb["duration"], previous)
+                except Exception as e:
+                    print(f"Error rendering statcast batting profile for {sb_player.get('name')}: {e}")
+
             ##i want to sohw the batted ball profile for the player used above
             batted_ball_players_by_id = {p['id']: p for p in batted_ball_profiles}
             bbp_player = batted_ball_players_by_id.get(player['id'])
