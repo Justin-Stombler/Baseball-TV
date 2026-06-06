@@ -1,4 +1,4 @@
-from ..api.statcast_batting import (
+from ..api.statcast_data import (
     fetch_hitter_expected_stats,
     fetch_pitcher_expected_stats,
     fetch_batter_exitvelo_barrels,
@@ -54,7 +54,7 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
 
     ## merge on player_id so each hitter row gets exit velo/barrel data and roster metadata
     merged = hitter_df.merge(exit_df[['player_id', 'avg_hit_speed', 'brl_percent', 'avg_hit_angle', 'barrels', 'avg_distance']], on='player_id', how='left')
-    merged = merged.merge(team_df[['player_id', 'team', 'position', 'babip']], on='player_id', how='inner')
+    merged = merged.merge(team_df[['player_id', 'team', 'position']], on='player_id', how='inner')
     players = []
 
     for _, row in merged.iterrows():
@@ -73,7 +73,6 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
                 'xslg':           row.get('est_slg'),
                 'woba':           row.get('woba'),
                 'xwoba':          row.get('est_woba'),
-                'babip':          row.get('babip'),
                 'exit_velocity':  row.get('avg_hit_speed'),
                 'barrel_rate':    row.get('brl_percent'),
                 'avg_hit_angle':  row.get('avg_hit_angle'),
@@ -97,7 +96,7 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
         on='player_id',
         how='left',
     )
-    merged = merged.merge(team_df[['player_id', 'team', 'position', 'babip_against']], on='player_id', how='inner')
+    merged = merged.merge(team_df[['player_id', 'team', 'position']], on='player_id', how='inner')
     players = []
 
     for _, row in merged.iterrows():
@@ -114,7 +113,6 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
                 'xba_against':      row.get('est_ba'),
                 'woba_against':     row.get('woba'),
                 'xwoba_against':    row.get('est_woba'),
-                'babip_against':    row.get('babip_against'),
                 'era':      row.get('era'),
                 'xera':     row.get('xera'),
                 'era_diff': row.get('era_minus_xera_diff'),

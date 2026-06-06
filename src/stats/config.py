@@ -48,12 +48,13 @@ STAT_CONFIG = {
     "xera":                 {"ascending": True,  "type": "pitching", "agg": "rate", "label": "xERA", "active": False},
     "woba_against":                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "wOBA", "active": False},
     'xwoba_against':                 {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xwOBA", "active": False},
-    'xba_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xBA", "active": False},
+    'xba_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xBA AGAINST", "active": False},
     'xslg_against':                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xSLG", "active": False},
     'slg_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "SLG", "active": False},
     'exit_velocity_against':         {"ascending": True, "type": "pitching",  "agg": "rate", "label": "AVG. EV", "active": False},
-    'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL %", "active": False},
+    'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL RATE", "active": False},
     'avg_distance':         {"ascending": False, "type": "pitching",  "agg": "rate", "label": "AVG. DIST", "active": False},
+    'era_diff': {"ascending": False, "type": "pitching",  "agg": "sum", "label": "ERA-xERA", "active": False},
 }
 
 HISTORY_CONFIG = {

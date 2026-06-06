@@ -4,7 +4,7 @@
 
 from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
 from ..constants import DATA_DIR
-from .statcast_batting import expected_stats_list
+from .statcast_data import expected_stats_list
 from ..stats.percentiles import add_percentiles
 import json
 
