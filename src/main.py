@@ -3,13 +3,15 @@ from .transforms.player_bios import bio_list
 from .transforms.player_history import player_history
 from .transforms.leaderboard import generate_leaderboard
 from .transforms.batted_ball_profile import player_list as batted_ball_player_list
-from .transforms.statcast_data import expected_stats_list
+from .transforms.statcast_batting import expected_stats_list
+from .transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
 from .render.batted_ball_profile import render_batted_ball_profile
-from .render.statcast_data import render_statcast_data
+from .render.statcast_batting import render_statcast_data
 from .render.stings import render_sting, stings
+from .render.team_leaderboard import render_team_leaderboard
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
@@ -29,8 +31,9 @@ if __name__ == "__main__":
     pp = DISPLAY_CONFIG["player_profiles"]
     history_count = pp.get("seasons")
     lb = DISPLAY_CONFIG["leaderboard"]
+    tlb = DISPLAY_CONFIG["team_leaderboard"]
     bbp = DISPLAY_CONFIG["batted_ball_profile"]
-    sb = DISPLAY_CONFIG["statcast"]
+    sb = DISPLAY_CONFIG["statcast_batting"]
     stings_cfg = DISPLAY_CONFIG["stings"]
     previous = None
 
@@ -93,3 +96,18 @@ if __name__ == "__main__":
             for league in lb["leagues"]:
                 leaderboard = generate_leaderboard(league=league, stat=stat)
                 previous = display(render_leaderboard(leaderboard, stat=stat, league=league), lb["duration"], previous, filename=f"{stat}_{league}.jpg")
+
+        for _ in range(stings_cfg["count"]):
+            sting_text = random.choice(stings)
+            previous = display(render_sting(sting_text), stings_cfg["duration"], previous=previous)
+            print("Pushed mode: stings")
+
+        for _ in range(tlb["count"]):
+            active_stats = [k for k, v in STAT_CONFIG.items() if v.get("team_leaderboard_active", True)]
+            selected_stats = random.sample(active_stats, min(tlb["stat_count"], len(active_stats)))
+            for stat in selected_stats:
+                available_teams = get_available_teams(stat=stat)
+                selected_teams = random.sample(available_teams, min(tlb["team_count"], len(available_teams)))
+                for team in selected_teams:
+                    team_leaderboard = generate_team_leaderboard(team=team, stat=stat)
+                    previous = display(render_team_leaderboard(team_leaderboard, stat=stat, team=team), tlb["duration"], previous)

@@ -4,15 +4,36 @@
 
 from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
 from ..constants import DATA_DIR
-from .statcast_data import expected_stats_list
+from .statcast_batting import expected_stats_list
 from ..stats.percentiles import add_percentiles
 import json
+import statsapi
 
 ##loading roster for number lookup
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
 rosters = {p['name']: p for p in roster_list} 
+_number_by_player_id = {}
+
+
+def _lookup_jersey_number(full_name: str, player_id: int):
+    """Get jersey number from roster first, then fallback to MLB person endpoint."""
+    number = rosters.get(full_name, {}).get('number')
+    if number:
+        return number
+
+    if player_id in _number_by_player_id:
+        return _number_by_player_id[player_id]
+
+    try:
+        person_data = statsapi.get('person', {'personId': player_id})
+        number = person_data.get('people', [{}])[0].get('primaryNumber')
+    except Exception:
+        number = None
+
+    _number_by_player_id[player_id] = number
+    return number
 
 def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
@@ -25,7 +46,7 @@ def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[d
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
-            'number': rosters.get(p['player']['fullName'], {}).get('number'),
+            'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {
@@ -67,7 +88,7 @@ def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
-            'number': rosters.get(p['player']['fullName'], {}).get('number'),
+            'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
             'team': p['team']['name'],
             'position': p['position']['abbreviation'],
             'stats': {

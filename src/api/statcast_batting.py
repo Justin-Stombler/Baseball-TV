@@ -42,7 +42,6 @@ def fetch_hitter_expected_stats(year: int, min_pa: str = "q") -> pd.DataFrame:
     """
     return pybaseball.statcast_batter_expected_stats(year, minPA=min_pa)
 
-
 def fetch_pitcher_expected_stats(year: int, min_pa: str = "q") -> pd.DataFrame:
     """Fetch expected stats for all pitchers in a given year.
     

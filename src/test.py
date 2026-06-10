@@ -8,15 +8,17 @@ from src.render.leaderboard import render_leaderboard
 from src.render.player_profiles import render_player_profiles
 from src.render.player_stats import render_player_stats
 from src.render.batted_ball_profile import render_batted_ball_profile
-from src.render.statcast_data import render_statcast_data
+from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
+from src.render.team_leaderboard import render_team_leaderboard
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
 from src.transforms.player_history import player_history
 from src.transforms.player_stats import player_list
 from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
-from src.transforms.statcast_data import expected_stats_list
+from src.transforms.statcast_batting import expected_stats_list
+from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 
 
 def display(image: bytes, duration: int, previous: str | None, filename: str | None = None) -> str:
@@ -74,6 +76,25 @@ def run_leaderboard_test(previous: str | None) -> str:
     print(f"Pushed mode: leaderboard ({league}, {stat})")
     return current
 
+def run_team_leaderboard_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["team_leaderboard"]
+    active_stats = [k for k, v in STAT_CONFIG.items() if v.get("team_leaderboard_active", True)]
+    stat = random.choice(active_stats)
+    teams = get_available_teams(stat=stat)
+    if not teams:
+        raise RuntimeError(f"No teams available for stat '{stat}'.")
+    team = random.choice(teams)
+
+    leaderboard = generate_team_leaderboard(team=team, stat=stat)
+    current = display(
+        render_team_leaderboard(leaderboard, stat=stat, team=team),
+        cfg["duration"],
+        previous=previous,
+        filename=f"team__{stat}.jpg",
+    )
+    print(f"Pushed mode: team_leaderboard ({team}, {stat})")
+    return current
+
 def run_batted_ball_profile_test(previous: str | None) -> str:
     cfg = DISPLAY_CONFIG["batted_ball_profile"]
     players = batted_ball_player_list()
@@ -89,12 +110,12 @@ def run_sting_test(previous: str | None) -> str:
     print("Pushed mode: stings")
     return current
 
-def run_statcast_data_test(previous: str | None) -> str:
-    cfg = DISPLAY_CONFIG["statcast"]
+def run_statcast_batting_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["statcast_batting"]
     players = expected_stats_list()
     player = random.choice(players)
     current = display(render_statcast_data(player), cfg["duration"], previous=previous)
-    print("Pushed mode: statcast")
+    print("Pushed mode: statcast_batting")
     return current
 
 def choose_mode() -> str:
@@ -103,16 +124,17 @@ def choose_mode() -> str:
         print("1) player_stats")
         print("2) player_profiles")
         print("3) leaderboard")
-        print("4) batted_ball_profile")
-        print("5) statcast")
-        print("6) stings")
-        raw_choice = input("Enter 1, 2, 3, 4, 5, or 6: ").strip()
+        print("4) team_leaderboard")
+        print("5) batted_ball_profile")
+        print("6) statcast_batting")
+        print("7) stings")
+        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, or 7: ").strip()
 
-        match = re.search(r"[123456]", raw_choice)
+        match = re.search(r"[1234567]", raw_choice)
         if match:
             return match.group(0)
 
-        print("Invalid choice. Enter 1, 2, 3, 4, 5, or 6.")
+        print("Invalid choice. Enter 1, 2, 3, 4, 5, 6, or 7.")
 
 
 def main() -> None:
@@ -127,10 +149,12 @@ def main() -> None:
         elif choice == "3":
             previous = run_leaderboard_test(previous)
         elif choice == "4":
-            previous = run_batted_ball_profile_test(previous)
+            previous = run_team_leaderboard_test(previous)
         elif choice == "5":
-            previous = run_statcast_data_test(previous)
+            previous = run_batted_ball_profile_test(previous)
         elif choice == "6":
+            previous = run_statcast_batting_test(previous)
+        elif choice == "7":
             previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause
