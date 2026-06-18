@@ -10,5 +10,6 @@ DISPLAY_CONFIG = {
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},
     "team_leaderboard": {"duration": 5, "count": 1, "stat_count": 2, "team_count": 3},
     "batted_ball_profile": {"duration": 5, "count": 3},
+    "pitch_performance": {"duration": 5, "count": 3},
     "stings": {"duration": 5, "count": 1},
 }

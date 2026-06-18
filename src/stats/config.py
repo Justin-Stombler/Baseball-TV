@@ -58,6 +58,9 @@ STAT_CONFIG = {
     'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL RATE", "active": False, "team_leaderboard_active": False},
     'avg_distance':         {"ascending": False, "type": "pitching",  "agg": "rate", "label": "AVG. DIST", "active": False, "team_leaderboard_active": False},
     'era_diff': {"ascending": False, "type": "pitching",  "agg": "rate", "label": "xERA ADJUSTMENT", "active": False, "team_leaderboard_active": False},
+    'ba':                   {"ascending": True,  "type": "pitching",  "agg": "rate", "label": "BA", "active": False, "team_leaderboard_active": False},
+    'hard_hit_percent':     {"ascending": True,  "type": "pitching",  "agg": "rate", "label": "Hard Hit %", "active": False, "team_leaderboard_active": False},
+    'whiff_percent':        {"ascending": False, "type": "pitching",  "agg": "rate", "label": "Whiff %", "active": False, "team_leaderboard_active": False},
 }
 
 HISTORY_CONFIG = {

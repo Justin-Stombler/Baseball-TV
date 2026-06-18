@@ -1,4 +1,4 @@
-from ..api.statcast_pitching import (
+from ..api.pitch_performance import (
     fetch_statcast_batter_pitch_arsenal,
     fetch_hitter_team_map,
 )

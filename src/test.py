@@ -11,6 +11,7 @@ from src.render.batted_ball_profile import render_batted_ball_profile
 from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
+from src.render.pitch_performance import render_pitch_performance
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
@@ -19,6 +20,8 @@ from src.transforms.player_stats import player_list
 from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
 from src.transforms.statcast_batting import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
+from src.transforms.pitch_performance_pitcher import pitch_performance_pitcher
+from src.transforms.pitch_performance_hitter import pitch_performance_hitter
 
 
 def display(image: bytes, duration: int, previous: str | None, filename: str | None = None) -> str:
@@ -118,6 +121,34 @@ def run_statcast_batting_test(previous: str | None) -> str:
     print("Pushed mode: statcast_batting")
     return current
 
+def run_pitch_performance_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["pitch_performance"]
+    hitters = pitch_performance_hitter()
+    pitchers = pitch_performance_pitcher()
+
+    if not hitters and not pitchers:
+        print("No pitch performance data available for hitters or pitchers. Try again.")
+        return previous
+
+    # Alternate so both datasets are exercised during test runs.
+    next_group = getattr(run_pitch_performance_test, "_next_group", "hitter")
+    if next_group == "hitter" and hitters:
+        selected_group = "hitter"
+        player = random.choice(hitters)
+        run_pitch_performance_test._next_group = "pitcher"
+    elif pitchers:
+        selected_group = "pitcher"
+        player = random.choice(pitchers)
+        run_pitch_performance_test._next_group = "hitter"
+    else:
+        selected_group = "hitter"
+        player = random.choice(hitters)
+        run_pitch_performance_test._next_group = "pitcher"
+
+    current = display(render_pitch_performance(player), cfg["duration"], previous=previous)
+    print(f"Pushed mode: pitch_performance ({selected_group})")
+    return current
+
 def choose_mode() -> str:
     while True:
         print("Choose a mode to test push output:")
@@ -127,14 +158,15 @@ def choose_mode() -> str:
         print("4) team_leaderboard")
         print("5) batted_ball_profile")
         print("6) statcast_batting")
-        print("7) stings")
-        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, or 7: ").strip()
+        print("7) pitch_performance")
+        print("8) stings")
+        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, 7, or 8: ").strip()
 
-        match = re.search(r"[1234567]", raw_choice)
+        match = re.search(r"[12345678]", raw_choice)
         if match:
             return match.group(0)
 
-        print("Invalid choice. Enter 1, 2, 3, 4, 5, 6, or 7.")
+        print("Invalid choice. Please enter a valid value.")
 
 
 def main() -> None:
@@ -155,6 +187,8 @@ def main() -> None:
         elif choice == "6":
             previous = run_statcast_batting_test(previous)
         elif choice == "7":
+            previous = run_pitch_performance_test(previous)
+        elif choice == "8":
             previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause

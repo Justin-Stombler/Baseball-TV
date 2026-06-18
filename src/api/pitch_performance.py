@@ -49,6 +49,18 @@ def fetch_statcast_batter_pitch_arsenal(year: int, minPA: int = 25) -> pd.DataFr
 
     return pybaseball.statcast_batter_pitch_arsenal(year, minPA=minPA)
 
+
+def fetch_statcast_pitcher_expected_stats(year: int, minPA: Union[int, str] = 1) -> pd.DataFrame:
+    """Retrieves season-level pitcher expected stats from Savant."""
+
+    return pybaseball.statcast_pitcher_expected_stats(year, minPA=minPA)
+
+
+def fetch_statcast_pitcher_exitvelo_barrels(year: int, minBBE: Union[int, str] = 1) -> pd.DataFrame:
+    """Retrieves season-level pitcher batted-ball quality metrics from Savant."""
+
+    return pybaseball.statcast_pitcher_exitvelo_barrels(year, minBBE=minBBE)
+
 if __name__ == "__main__":
     # Example usage:
     pitcher_arsenal = fetch_statcast_pitcher_pitch_arsenal(2026)
