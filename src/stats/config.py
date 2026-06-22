@@ -45,7 +45,7 @@ STAT_CONFIG = {
     "hitsPer9Inn":          {"ascending": True,  "type": "pitching", "agg": "rate", "label": "H/9", "active": True, "team_leaderboard_active": False},
     "homeRunsPer9":         {"ascending": True,  "type": "pitching", "agg": "rate", "label": "HR/9", "active": True, "team_leaderboard_active": False},
     "losses":               {"ascending": True,  "type": "pitching", "agg": "sum",  "label": "Losses", "active": True, "team_leaderboard_active": False},
-    "blownSaves":           {"ascending": True, "type": "pitching", "agg": "sum",  "label": "Blown Saves", "active": False, "team_leaderboard_active": True},
+    "blownSaves":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Blown Saves", "active": False, "team_leaderboard_active": True},
     "earnedRuns":           {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Earned Runs ", "active": True, "team_leaderboard_active": True},
     "xera":                 {"ascending": True,  "type": "pitching", "agg": "rate", "label": "xERA", "active": False, "team_leaderboard_active": False},
     "woba_against":                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "wOBA", "active": False, "team_leaderboard_active": False},

@@ -46,7 +46,7 @@ def get_available_teams(
     }
     return sorted(teams)
 
-def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 2026, stat: str = "avg", qualified_only: bool = False) -> list[dict]:
+def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 2026, stat: str = "avg", qualified_only: bool = False, min_ab: int = 0, min_ip: float = 0.0) -> list[dict]:
     """Get top 5 players for a given stat, league, and player type."""
     player_pool = 'QUALIFIED' if qualified_only else 'ALL'
 
@@ -61,8 +61,13 @@ def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 202
 
     team_players = [p for p in splits if p['team']['name'] == team]
     team_players = [p for p in team_players if p.get('stat', {}).get(stat) is not None]
-    if type == 'pitching':
+    
+    ##Apply minimum at-bats or innings pitched filters
+    if type == 'hitting':
+        team_players = [p for p in team_players if _to_float_or_none(p.get('stat', {}).get('atBats')) is not None and _to_float_or_none(p.get('stat', {}).get('atBats')) >= min_ab]
+    elif type == 'pitching':
         team_players = [p for p in team_players if _is_pitcher(p)]
+        team_players = [p for p in team_players if _to_float_or_none(p.get('stat', {}).get('inningsPitched')) is not None and _to_float_or_none(p.get('stat', {}).get('inningsPitched')) >= min_ip]
 
     sortable_players = [
         p for p in team_players

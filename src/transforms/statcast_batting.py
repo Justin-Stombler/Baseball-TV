@@ -11,11 +11,13 @@ from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 import json
 import unicodedata
+import statsapi
 
 
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
+_number_by_player_id = {}
 
 def _normalize_name(name: str) -> str:
     if not name:
@@ -41,9 +43,27 @@ def _display_name(raw_name: str) -> str:
     return f"{first} {last}".strip()
 
 
-def _roster_number_for_name(display_name: str):
+def _roster_number_for_name(display_name: str, player_id: int = None):
+    """Get jersey number from roster first, then fallback to MLB person endpoint."""
     player = rosters_by_name.get(_normalize_name(display_name), {})
-    return player.get("number")
+    number = player.get("number")
+    if number:
+        return number
+    
+    if player_id is None:
+        return None
+    
+    if player_id in _number_by_player_id:
+        return _number_by_player_id[player_id]
+    
+    try:
+        person_data = statsapi.get('person', {'personId': player_id})
+        number = person_data.get('people', [{}])[0].get('primaryNumber')
+    except Exception:
+        number = None
+    
+    _number_by_player_id[player_id] = number
+    return number
 
 
 def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
@@ -70,7 +90,7 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
         players.append({
             'id': row.get('player_id'),
             'name': display_name,
-            'number': _roster_number_for_name(display_name),
+            'number': _roster_number_for_name(display_name, row.get('player_id')),
             'team': row.get('team'),
             'position': row.get('position'),
             'stats': {
@@ -133,7 +153,7 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
         players.append({
             'id': row.get('player_id'),
             'name': display_name,
-            'number': _roster_number_for_name(display_name),
+            'number': _roster_number_for_name(display_name, row.get('player_id')),
             'team': row.get('team'),
             'position': row.get('position') or 'P',
             'stats': {

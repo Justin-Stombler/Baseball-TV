@@ -10,13 +10,18 @@ from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
 from .render.batted_ball_profile import render_batted_ball_profile
 from .render.statcast_batting import render_statcast_data
+from .render.startup import render_startup
 from .render.stings import render_sting, stings
 from .render.team_leaderboard import render_team_leaderboard
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
+from .constants import DATA_DIR
 import random
 import time
+import json
+import subprocess
+import os
 
 def display(image: bytes, duration: int, previous: str | None, filename: str = None) -> str:
     """Push image, delete previous, wait duration. Returns current filename."""
@@ -25,6 +30,32 @@ def display(image: bytes, duration: int, previous: str | None, filename: str = N
         delete(previous)
     time.sleep(duration)
     return current
+
+
+def startup_sequence(startup_cfg: dict) -> str | None:
+    """Display startup screen and fetch fresh roster data. Move to next display immediately after fetch completes."""
+    startup_bytes = render_startup()
+    previous = push(startup_bytes, filename="startup.jpg")
+    
+    try:
+        print("Fetching all MLB rosters...")
+        # Run fetch_roster.py directly via subprocess
+        script_path = os.path.join(os.path.dirname(__file__), '..', 'setup_files', 'fetch_roster.py')
+        result = subprocess.run(
+            ['python', script_path],
+            capture_output=True,
+            text=True,
+            cwd=os.path.join(os.path.dirname(__file__), '..')
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print(f"Warning: fetch_roster returned error: {result.stderr}")
+    except Exception as e:
+        print(f"Error during startup: {e}")
+    
+    # Return immediately - move to next display as soon as fetch is done
+    return previous
+
 
 if __name__ == "__main__":
     ps = DISPLAY_CONFIG["player_stats"]
@@ -35,7 +66,10 @@ if __name__ == "__main__":
     bbp = DISPLAY_CONFIG["batted_ball_profile"]
     sb = DISPLAY_CONFIG["statcast_batting"]
     stings_cfg = DISPLAY_CONFIG["stings"]
-    previous = None
+    startup_cfg = DISPLAY_CONFIG["startup"]
+    
+    # Run startup sequence on first boot
+    previous = startup_sequence(startup_cfg)
 
     while True:
         ##Load players and bios fresh for each cycle
@@ -106,8 +140,11 @@ if __name__ == "__main__":
             active_stats = [k for k, v in STAT_CONFIG.items() if v.get("team_leaderboard_active", True)]
             selected_stats = random.sample(active_stats, min(tlb["stat_count"], len(active_stats)))
             for stat in selected_stats:
-                available_teams = get_available_teams(stat=stat)
+                available_teams = get_available_teams(stat=stat, qualified_only=True)
                 selected_teams = random.sample(available_teams, min(tlb["team_count"], len(available_teams)))
                 for team in selected_teams:
-                    team_leaderboard = generate_team_leaderboard(team=team, stat=stat)
+                    stat_type = STAT_CONFIG.get(stat, {}).get('type')
+                    min_ab = tlb.get("min_ab") if stat_type == 'hitting' else 0
+                    min_ip = tlb.get("min_ip") if stat_type == 'pitching' else 0.0
+                    team_leaderboard = generate_team_leaderboard(team=team, stat=stat, qualified_only=True, min_ab=min_ab, min_ip=min_ip)
                     previous = display(render_team_leaderboard(team_leaderboard, stat=stat, team=team), tlb["duration"], previous)
