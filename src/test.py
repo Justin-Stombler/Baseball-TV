@@ -12,6 +12,7 @@ from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
 from src.render.pitch_performance import render_pitch_performance
+from src.render.division_standings import render_division_standings
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
@@ -22,6 +23,8 @@ from src.transforms.statcast_batting import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from src.transforms.pitch_performance_pitcher import pitch_performance_pitcher
 from src.transforms.pitch_performance_hitter import pitch_performance_hitter
+from src.transforms.standings import generate_standings, generate_division_standings
+
 
 
 def display(image: bytes, duration: int, previous: str | None, filename: str | None = None) -> str:
@@ -121,6 +124,24 @@ def run_statcast_batting_test(previous: str | None) -> str:
     print("Pushed mode: statcast_batting")
     return current
 
+def run_division_standings_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["division_standings"]
+    next_league = getattr(run_division_standings_test, "_next_league", "AL")
+    divisions = ["East", "Central", "West"]
+
+    current = previous
+    for division in divisions:
+        standings = generate_division_standings(league=next_league, division=division)
+        current = display(
+            render_division_standings(standings=standings, division=division, league=next_league),
+            cfg["duration"],
+            previous=current,
+        )
+
+    run_division_standings_test._next_league = "NL" if next_league == "AL" else "AL"
+    print(f"Pushed mode: division_standings ({next_league} East/Central/West)")
+    return current
+
 def run_pitch_performance_test(previous: str | None) -> str:
     cfg = DISPLAY_CONFIG["pitch_performance"]
     hitters = pitch_performance_hitter()
@@ -159,10 +180,11 @@ def choose_mode() -> str:
         print("5) batted_ball_profile")
         print("6) statcast_batting")
         print("7) pitch_performance")
-        print("8) stings")
-        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, 7, or 8: ").strip()
+        print("8) division_standings")
+        print("9) stings")
+        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, 7, 8, or 9: ").strip()
 
-        match = re.search(r"[12345678]", raw_choice)
+        match = re.search(r"[123456789]", raw_choice)
         if match:
             return match.group(0)
 
@@ -189,6 +211,8 @@ def main() -> None:
         elif choice == "7":
             previous = run_pitch_performance_test(previous)
         elif choice == "8":
+            previous = run_division_standings_test(previous)
+        elif choice == "9":
             previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause
