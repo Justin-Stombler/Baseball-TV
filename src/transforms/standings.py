@@ -2,7 +2,7 @@ from ..api.team_performance import fetch_team_performance
 
 
 def generate_standings(season: int = 2026, standings_type: str = "regularSeason") -> list[dict]:
-	"""Return standings rows trimmed to the fields needed for a division standings render."""
+	"""Return trimmed standings rows used by the standings renders."""
 	rows = fetch_team_performance(season=season, standings_type=standings_type)
 	return [
 		{
@@ -12,7 +12,9 @@ def generate_standings(season: int = 2026, standings_type: str = "regularSeason"
 			"wins": r.get("wins"),
 			"losses": r.get("losses"),
 			"pct": r.get("pct"),
+			"wild_card_rank": r.get("wild_card_rank"),
 			"division_games_back": r.get("division_games_back"),
+			"wild_card_games_back": r.get("wild_card_games_back"),
 			"streak": r.get("streak"),
 			"last_ten": r.get("last_ten"),
 		}
@@ -20,42 +22,28 @@ def generate_standings(season: int = 2026, standings_type: str = "regularSeason"
 	]
 
 
-def _pct_to_float(value) -> float:
-	"""Safely convert pct values like '.612' to float for sorting."""
-	try:
-		return float(value)
-	except (TypeError, ValueError):
-		return -1.0
-
-
-def _league_name(league: str) -> str:
+def generate_wild_card_standings(
+	league: str,
+	season: int = 2026,
+	standings_type: str = "regularSeason",
+	count: int = 5,
+) -> list[dict]:
+	"""Return the current wild card field plus the next teams below for one league."""
 	league_map = {
 		"AL": "American League",
 		"NL": "National League",
 	}
-	return league_map.get(league, league)
-
-
-def select_division_standings(
-	rows: list[dict],
-	league: str,
-	division: str,
-) -> list[dict]:
-	"""Filter standings rows to one league/division and sort by pct descending."""
-	full_league = _league_name(league)
-	division_lower = division.lower().strip()
+	full_league = league_map.get(league, league)
+	rows = generate_standings(season=season, standings_type=standings_type)
 	filtered = [
 		r
 		for r in rows
-		if (r.get("league_name") == full_league)
-		and (division_lower in (r.get("division_name") or "").lower())
+		if r.get("league_name") == full_league and r.get("wild_card_rank") is not None
 	]
-	return sorted(filtered, key=lambda r: _pct_to_float(r.get("pct")), reverse=True)
-
-
-def get_division_teams(rows: list[dict], league: str, division: str) -> list[str]:
-	"""Return team names for one division from a full standings dataset."""
-	return [r.get("team_name") for r in select_division_standings(rows, league, division)]
+	return sorted(
+		filtered,
+		key=lambda r: int(r.get("wild_card_rank", 999)),
+	)[:count]
 
 
 def generate_division_standings(
@@ -64,9 +52,28 @@ def generate_division_standings(
 	season: int = 2026,
 	standings_type: str = "regularSeason",
 ) -> list[dict]:
-	"""Convenience wrapper: fetch full standings then select one division."""
+	"""Return standings rows for one division, sorted by winning percentage."""
+	league_map = {
+		"AL": "American League",
+		"NL": "National League",
+	}
+	full_league = league_map.get(league, league)
+	division_lower = division.lower().strip()
 	rows = generate_standings(season=season, standings_type=standings_type)
-	return select_division_standings(rows=rows, league=league, division=division)
+	filtered = [
+		r
+		for r in rows
+		if r.get("league_name") == full_league
+		and division_lower in (r.get("division_name") or "").lower()
+	]
+
+	def pct_value(row: dict) -> float:
+		try:
+			return float(row.get("pct"))
+		except (TypeError, ValueError):
+			return -1.0
+
+	return sorted(filtered, key=pct_value, reverse=True)
 
 
 if __name__ == "__main__":

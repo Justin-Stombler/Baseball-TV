@@ -13,5 +13,6 @@ DISPLAY_CONFIG = {
     "batted_ball_profile": {"duration": 5, "count": 3},
     "pitch_performance": {"duration": 5, "count": 3},
     "division_standings": {"duration": 5, "count": 3},
+    "wildcard_standings": {"duration": 5, "count": 2},
     "stings": {"duration": 5, "count": 1},
 }

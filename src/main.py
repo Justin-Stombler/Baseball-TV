@@ -5,6 +5,7 @@ from .transforms.leaderboard import generate_leaderboard
 from .transforms.batted_ball_profile import player_list as batted_ball_player_list
 from .transforms.statcast_batting import expected_stats_list
 from .transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
+from .transforms.standings import generate_division_standings, generate_wild_card_standings
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
@@ -13,6 +14,8 @@ from .render.statcast_batting import render_statcast_data
 from .render.startup import render_startup
 from .render.stings import render_sting, stings
 from .render.team_leaderboard import render_team_leaderboard
+from .render.division_standings import render_division_standings
+from .render.wildcard_standings import render_wildcard_standings
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
@@ -65,8 +68,13 @@ if __name__ == "__main__":
     tlb = DISPLAY_CONFIG["team_leaderboard"]
     bbp = DISPLAY_CONFIG["batted_ball_profile"]
     sb = DISPLAY_CONFIG["statcast_batting"]
+    ds = DISPLAY_CONFIG["division_standings"]
+    ws = DISPLAY_CONFIG["wildcard_standings"]
     stings_cfg = DISPLAY_CONFIG["stings"]
     startup_cfg = DISPLAY_CONFIG["startup"]
+    
+    # Standings cycle: 0=AL divisions, 1=NL divisions, 2=wildcard
+    standings_cycle = 0
     
     # Run startup sequence on first boot
     previous = startup_sequence(startup_cfg)
@@ -140,11 +148,40 @@ if __name__ == "__main__":
             active_stats = [k for k, v in STAT_CONFIG.items() if v.get("team_leaderboard_active", True)]
             selected_stats = random.sample(active_stats, min(tlb["stat_count"], len(active_stats)))
             for stat in selected_stats:
-                available_teams = get_available_teams(stat=stat, qualified_only=True)
+                available_teams = get_available_teams(stat=stat, qualified_only=False)
                 selected_teams = random.sample(available_teams, min(tlb["team_count"], len(available_teams)))
                 for team in selected_teams:
                     stat_type = STAT_CONFIG.get(stat, {}).get('type')
                     min_ab = tlb.get("min_ab") if stat_type == 'hitting' else 0
                     min_ip = tlb.get("min_ip") if stat_type == 'pitching' else 0.0
-                    team_leaderboard = generate_team_leaderboard(team=team, stat=stat, qualified_only=True, min_ab=min_ab, min_ip=min_ip)
+                    team_leaderboard = generate_team_leaderboard(team=team, stat=stat, qualified_only=False, min_ab=min_ab, min_ip=min_ip)
                     previous = display(render_team_leaderboard(team_leaderboard, stat=stat, team=team), tlb["duration"], previous)
+
+        for _ in range(stings_cfg["count"]):
+            sting_text = random.choice(stings)
+            previous = display(render_sting(sting_text), stings_cfg["duration"], previous=previous)
+            print("Pushed mode: stings")
+
+        # 3-cycle standings rotation: 0=AL div, 1=NL div, 2=wildcard
+        if standings_cycle == 0:
+            # AL division standings: East, Central, West
+            divisions = ["East", "Central", "West"]
+            for division in divisions:
+                standings = generate_division_standings(league="AL", division=division)
+                previous = display(render_division_standings(standings=standings, division=division, league="AL"), ds["duration"], previous)
+            print("Pushed mode: division_standings (AL East/Central/West)")
+        elif standings_cycle == 1:
+            # NL division standings: East, Central, West
+            divisions = ["East", "Central", "West"]
+            for division in divisions:
+                standings = generate_division_standings(league="NL", division=division)
+                previous = display(render_division_standings(standings=standings, division=division, league="NL"), ds["duration"], previous)
+            print("Pushed mode: division_standings (NL East/Central/West)")
+        else:
+            # Wildcard standings: AL and NL
+            for league in ["AL", "NL"]:
+                standings = generate_wild_card_standings(league=league)
+                previous = display(render_wildcard_standings(standings=standings, league=league), ws["duration"], previous)
+            print("Pushed mode: wildcard_standings (AL, NL)")
+        
+        standings_cycle = (standings_cycle + 1) % 3
