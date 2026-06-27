@@ -11,6 +11,7 @@ from src.render.batted_ball_profile import render_batted_ball_profile
 from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
+from src.render.team_profiles import render_team_profiles
 from src.render.pitch_performance import render_pitch_performance
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
@@ -22,6 +23,7 @@ from src.transforms.player_stats import player_list
 from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
 from src.transforms.statcast_batting import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
+from src.transforms.team_profiles import generate_team_profile
 from src.transforms.pitch_performance_pitcher import pitch_performance_pitcher
 from src.transforms.pitch_performance_hitter import pitch_performance_hitter
 from src.transforms.standings import generate_division_standings, generate_wild_card_standings
@@ -100,6 +102,14 @@ def run_team_leaderboard_test(previous: str | None) -> str:
         filename=f"team__{stat}.jpg",
     )
     print(f"Pushed mode: team_leaderboard ({team}, {stat})")
+    return current
+
+def run_team_profiles_test(previous: str | None) -> str:
+    cfg = DISPLAY_CONFIG["team_profiles"]
+    profiles = generate_team_profile()
+    team = random.choice(profiles)
+    current = display(render_team_profiles(team), cfg["duration"], previous=previous)
+    print("Pushed mode: team_profiles")
     return current
 
 def run_batted_ball_profile_test(previous: str | None) -> str:
@@ -194,15 +204,16 @@ def choose_mode() -> str:
         print("2) player_profiles")
         print("3) leaderboard")
         print("4) team_leaderboard")
-        print("5) batted_ball_profile")
-        print("6) statcast_batting")
-        print("7) pitch_performance")
-        print("8) division_standings")
-        print("9) wildcard_standings")
-        print("10) stings")
-        raw_choice = input("Enter 1, 2, 3, 4, 5, 6, 7, 8, 9, or 10: ").strip()
+        print("5) team_profiles")
+        print("6) batted_ball_profile")
+        print("7) statcast_batting")
+        print("8) pitch_performance")
+        print("9) division_standings")
+        print("10) wildcard_standings")
+        print("11) stings")
+        raw_choice = input("Enter 1-11: ").strip()
 
-        if raw_choice in {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}:
+        if raw_choice in {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}:
             return raw_choice
 
         print("Invalid choice. Please enter a valid value.")
@@ -222,16 +233,18 @@ def main() -> None:
         elif choice == "4":
             previous = run_team_leaderboard_test(previous)
         elif choice == "5":
-            previous = run_batted_ball_profile_test(previous)
+            previous = run_team_profiles_test(previous)
         elif choice == "6":
-            previous = run_statcast_batting_test(previous)
+            previous = run_batted_ball_profile_test(previous)
         elif choice == "7":
-            previous = run_pitch_performance_test(previous)
+            previous = run_statcast_batting_test(previous)
         elif choice == "8":
-            previous = run_division_standings_test(previous)
+            previous = run_pitch_performance_test(previous)
         elif choice == "9":
-            previous = run_wildcard_standings_test(previous)
+            previous = run_division_standings_test(previous)
         elif choice == "10":
+            previous = run_wildcard_standings_test(previous)
+        elif choice == "11":
             previous = run_sting_test(previous)
 
         # SLEEP_BETWEEN_PUSHES: comment out to remove the pause

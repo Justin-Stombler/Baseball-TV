@@ -30,6 +30,7 @@ def push(image: bytes, filename: str = None) -> str:
 
     requests.get(f"http://{DEVICE_IP}/set?theme=11", timeout=10)
     requests.get(f"http://{DEVICE_IP}/set?img=/image/{filename}", timeout=10)
+    
     return filename
 
 ##Second function is to delete the image when desired, as the goal is to keep minimal files on the device at all times
