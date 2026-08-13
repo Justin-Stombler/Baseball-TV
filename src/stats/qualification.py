@@ -1,11 +1,3 @@
-###Baseball Savant style qualification (2.1 PA/G hitters, 1.25 PA/G pitchers)
-###Rates come from QUALIFICATION_CONFIG in config.py - don't redefine them here.
-###Used only by the player cycle (player_stats -> bio_list -> statcast_batting -> batted_ball_profile)
-###so relievers and part-time bench bats aren't excluded from random player selection
-###the way statsapi's playerPool='QUALIFIED' excludes them.
-###Leaderboards intentionally keep using statsapi's QUALIFIED pool (see config.py comment)
-###to mirror the site's official leaderboards - don't use this there.
-
 from ..api.team_performance import fetch_team_performance
 from ..config import QUALIFICATION_CONFIG
 
