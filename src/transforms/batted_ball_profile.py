@@ -6,6 +6,7 @@ from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
 from ..constants import DATA_DIR
 from .statcast_batting import expected_stats_list
 from ..stats.percentiles import add_percentiles
+from ..stats.qualification import filter_qualified
 import json
 import statsapi
 
@@ -37,8 +38,9 @@ def _lookup_jersey_number(full_name: str, player_id: int):
 
 def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
-    player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_advanced_hitting(season, player_pool=player_pool)
+    splits = fetch_advanced_hitting(season, player_pool='ALL')
+    if qualified_only:
+        splits = filter_qualified(splits, 'HITTER', season)
     players = []
     
     for p in splits:
@@ -79,8 +81,9 @@ def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[d
 
 def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher stats into a more usable format for stats rendering."""
-    player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_advanced_pitching(season, player_pool=player_pool)
+    splits = fetch_advanced_pitching(season, player_pool='ALL')
+    if qualified_only:
+        splits = filter_qualified(splits, 'PITCHER', season)
     players = []
     
     for p in splits:

@@ -9,6 +9,7 @@ from ..api.statcast_batting import (
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
+from ..stats.qualification import qualification_threshold
 import json
 import unicodedata
 import statsapi
@@ -68,11 +69,11 @@ def _roster_number_for_name(display_name: str, player_id: int = None):
 
 def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter expected stats into a more usable format for stats rendering."""
-    min_pa = "q" if qualified_only else "0"
+    min_pa = str(round(qualification_threshold('HITTER', season))) if qualified_only else "0"
     hitter_df = fetch_hitter_expected_stats(season, min_pa=min_pa)
     exit_df = fetch_batter_exitvelo_barrels(season, min_bbe=min_pa)
-    team_df = fetch_hitter_team_map(season=season, player_pool='QUALIFIED' if qualified_only else 'ALL')
-    hitter_stats = fetch_hitter_stats(season=season, player_pool='QUALIFIED' if qualified_only else 'ALL')
+    team_df = fetch_hitter_team_map(season=season, player_pool='ALL')
+    hitter_stats = fetch_hitter_stats(season=season, player_pool='ALL')
     babip_map = {
         p["player"]["id"]: p["stat"].get("babip")
         for p in hitter_stats
@@ -116,17 +117,17 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
 
 def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher expected stats into a more usable format for stats rendering."""
-    min_pa = "q" if qualified_only else "0"
+    min_pa = str(round(qualification_threshold('PITCHER', season))) if qualified_only else "0"
     pitcher_df = fetch_pitcher_expected_stats(season, min_pa=min_pa)
     pitcher_exit_df = fetch_pitcher_exitvelo_barrels(season, min_bbe=min_pa)
-    team_df = fetch_pitcher_team_map(season=season, player_pool='QUALIFIED' if qualified_only else 'ALL')
+    team_df = fetch_pitcher_team_map(season=season, player_pool='ALL')
 
     ##I fundamentally disagree with a BABIP reconstruction for picthers for a few reasons
     ##but good lord do i dislike the ERA adjustment so here we are
     ##so....let's do it?
 
     ##BABIP = (H - HR) / (AB - K - BB + SF)
-    pitcher_stats = fetch_pitcher_stats(season=season, player_pool='QUALIFIED' if qualified_only else 'ALL')
+    pitcher_stats = fetch_pitcher_stats(season=season, player_pool='ALL')
     babip_against_map = {}
     for p in pitcher_stats:
         s = p["stat"]

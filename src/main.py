@@ -5,6 +5,7 @@ from .transforms.leaderboard import generate_leaderboard
 from .transforms.batted_ball_profile import player_list as batted_ball_player_list
 from .transforms.statcast_batting import expected_stats_list
 from .transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
+from .transforms.team_profiles import generate_team_profile
 from .transforms.standings import generate_division_standings, generate_wild_card_standings
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
@@ -14,6 +15,7 @@ from .render.statcast_batting import render_statcast_data
 from .render.startup import render_startup
 from .render.stings import render_sting, stings
 from .render.team_leaderboard import render_team_leaderboard
+from .render.team_profiles import render_team_profiles
 from .render.division_standings import render_division_standings
 from .render.wildcard_standings import render_wildcard_standings
 from .push import push, delete
@@ -70,6 +72,7 @@ if __name__ == "__main__":
     sb = DISPLAY_CONFIG["statcast_batting"]
     ds = DISPLAY_CONFIG["division_standings"]
     ws = DISPLAY_CONFIG["wildcard_standings"]
+    tp = DISPLAY_CONFIG["team_profiles"]
     stings_cfg = DISPLAY_CONFIG["stings"]
     startup_cfg = DISPLAY_CONFIG["startup"]
     
@@ -183,5 +186,21 @@ if __name__ == "__main__":
                 standings = generate_wild_card_standings(league=league)
                 previous = display(render_wildcard_standings(standings=standings, league=league), ws["duration"], previous)
             print("Pushed mode: wildcard_standings (AL, NL)")
-        
+
         standings_cycle = (standings_cycle + 1) % 3
+
+        for _ in range(stings_cfg["count"]):
+            sting_text = random.choice(stings)
+            previous = display(render_sting(sting_text), stings_cfg["duration"], previous=previous)
+            print("Pushed mode: stings")
+
+        profiles = generate_team_profile()
+        if profiles:
+            for _ in range(tp["count"]):
+                team = random.choice(profiles)
+                previous = display(render_team_profiles(team), tp["duration"], previous)
+            print(f"Pushed mode: team_profiles ({tp['count']})")
+        else:
+            print("No team profile data available")
+        
+        

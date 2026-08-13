@@ -5,6 +5,7 @@
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
+from ..stats.qualification import filter_qualified
 import json
 import statsapi
 
@@ -35,8 +36,9 @@ def _lookup_jersey_number(full_name: str, player_id: int):
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
-    player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_hitter_stats(season, player_pool=player_pool)
+    splits = fetch_hitter_stats(season, player_pool='ALL')
+    if qualified_only:
+        splits = filter_qualified(splits, 'HITTER', season)
     players = []
     
     for p in splits:
@@ -60,8 +62,9 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
 
 def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher stats into a more usable format for stats rendering."""
-    player_pool = 'QUALIFIED' if qualified_only else 'ALL'
-    splits = fetch_pitcher_stats(season, player_pool=player_pool)
+    splits = fetch_pitcher_stats(season, player_pool='ALL')
+    if qualified_only:
+        splits = filter_qualified(splits, 'PITCHER', season)
     players = []
     
     for p in splits:

@@ -61,9 +61,25 @@ def fetch_statcast_pitcher_exitvelo_barrels(year: int, minBBE: Union[int, str] =
 
     return pybaseball.statcast_pitcher_exitvelo_barrels(year, minBBE=minBBE)
 
+
+def fetch_statcast_pitcher_run_value(year: int) -> pd.DataFrame:
+    """Retrieves pitcher swing/take run-value data from Savant."""
+
+    return pybaseball.statcast_pitcher_run_value(year)
+
+
+def fetch_statcast_batter_run_value(year: int) -> pd.DataFrame:
+    """Retrieves batter swing/take run-value data from Savant."""
+
+    return pybaseball.statcast_batter_run_value(year)
+
 if __name__ == "__main__":
     # Example usage:
     pitcher_arsenal = fetch_statcast_pitcher_pitch_arsenal(2026)
     pitcher_arsenal_stats = fetch_statcast_pitcher_arsenal_stats(2026)
+    pitcher_run_value = fetch_statcast_pitcher_run_value(2026)
+    batter_run_value = fetch_statcast_batter_run_value(2026)
     print(pitcher_arsenal.head())
     print(pitcher_arsenal_stats.head())
+    print(pitcher_run_value.head())
+    print(batter_run_value.head())
