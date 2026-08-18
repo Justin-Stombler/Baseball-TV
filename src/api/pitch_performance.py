@@ -4,6 +4,7 @@ import pybaseball
 from typing import Union
 
 from .player_stats import fetch_hitter_stats, fetch_pitcher_stats
+from ..stats.pitcher_role import pitcher_position
 
 
 def fetch_hitter_team_map(season: int = 2026, player_pool: str = "ALL") -> pd.DataFrame:
@@ -21,13 +22,13 @@ def fetch_hitter_team_map(season: int = 2026, player_pool: str = "ALL") -> pd.Da
 
 
 def fetch_pitcher_team_map(season: int = 2026, player_pool: str = "ALL") -> pd.DataFrame:
-    """Build a pitcher metadata map with team and position keyed by player_id."""
+    """Build a pitcher metadata map with team and position (SP/RP/TWP) keyed by player_id."""
     splits = fetch_pitcher_stats(season=season, player_pool=player_pool)
     rows = [
         {
             "player_id": p["player"]["id"],
             "team": p["team"]["name"],
-            "position": p["position"]["abbreviation"],
+            "position": pitcher_position(p),
         }
         for p in splits
     ]

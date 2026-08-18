@@ -32,7 +32,7 @@ def bio_list(
             'team': team_name,
             'teamAbbreviation': get_team_abbreviation(team_name),
             'primaryNumber': bio.get('primaryNumber'),
-            'position': bio.get('primaryPosition', {}).get('abbreviation'),
+            'position': stats_player['position'],
             'age': bio.get('currentAge'),
             'height': bio.get('height'),
             'weight': bio.get('weight'),

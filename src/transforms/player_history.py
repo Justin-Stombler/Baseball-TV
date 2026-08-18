@@ -1,5 +1,6 @@
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from ..stats.config import HISTORY_CONFIG
+from ..stats.qualification import filter_qualified
 from data.team_abbreviations import get_team_abbreviation
 ##kind of meant ot mimic the player history tables you see on the back of a baseball card
 
@@ -14,8 +15,8 @@ def player_history(
     seasons = [season - i for i in range(count - 1, -1, -1)]
     history_by_id: dict[int, list[dict]] = {}
     player_groups = {
-        "hitting": [player for player in players if player.get("position") != "P" and player.get("id") is not None],
-        "pitching": [player for player in players if player.get("position") == "P" and player.get("id") is not None],
+        "hitting": [player for player in players if player.get("position") not in ("SP", "RP") and player.get("id") is not None],
+        "pitching": [player for player in players if player.get("position") in ("SP", "RP") and player.get("id") is not None],
     }
 
     for group_name, grouped_players in player_groups.items():
@@ -31,9 +32,18 @@ def player_history(
         ]
 
         if position == "P":
-            qualified_splits = fetch_pitcher_stats(season, player_pool="QUALIFIED") if qualified_only else []
+            all_current_splits = fetch_pitcher_stats(season, player_pool="ALL") if qualified_only else []
         else:
-            qualified_splits = fetch_hitter_stats(season, player_pool="QUALIFIED") if qualified_only else []
+            all_current_splits = fetch_hitter_stats(season, player_pool="ALL") if qualified_only else []
+
+        ##use this app's own (lowered) qualification threshold rather than statsapi's stricter
+        ##official playerPool="QUALIFIED", so players who qualify under our thresholds
+        ##(e.g. relievers under the current BF/game rate) aren't dropped from their own history table.
+        qualified_splits = (
+            filter_qualified(all_current_splits, "PITCHER" if position == "P" else "HITTER", season)
+            if qualified_only
+            else []
+        )
 
         qualified_ids = {
             split["player"]["id"]

@@ -12,13 +12,10 @@ from ..stats.percentiles import add_percentiles
 from ..stats.qualification import qualification_threshold
 import json
 import unicodedata
-import statsapi
 
 
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
-
-_number_by_player_id = {}
 
 def _normalize_name(name: str) -> str:
     if not name:
@@ -45,33 +42,18 @@ def _display_name(raw_name: str) -> str:
 
 
 def _roster_number_for_name(display_name: str, player_id: int = None):
-    """Get jersey number from roster first, then fallback to MLB person endpoint."""
-    player = rosters_by_name.get(_normalize_name(display_name), {})
-    number = player.get("number")
-    if number:
-        return number
-    
-    if player_id is None:
-        return None
-    
-    if player_id in _number_by_player_id:
-        return _number_by_player_id[player_id]
-    
-    try:
-        person_data = statsapi.get('person', {'personId': player_id})
-        number = person_data.get('people', [{}])[0].get('primaryNumber')
-    except Exception:
-        number = None
-    
-    _number_by_player_id[player_id] = number
-    return number
+    """Get jersey number from roster.json by normalized name. Returns None if not listed (roster is refreshed at startup)."""
+    return rosters_by_name.get(_normalize_name(display_name), {}).get("number")
 
 
 def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter expected stats into a more usable format for stats rendering."""
     min_pa = str(round(qualification_threshold('HITTER', season))) if qualified_only else "0"
     hitter_df = fetch_hitter_expected_stats(season, min_pa=min_pa)
-    exit_df = fetch_batter_exitvelo_barrels(season, min_bbe=min_pa)
+    ##BBE (batted ball events) excludes walks/Ks/HBP so it's always <= PA for the same player.
+    ##Reusing min_pa as min_bbe over-filters this pull and drops qualified hitters from the join (NaN exit velo/barrel data).
+    ##Qualification is already enforced by min_pa above, so pull this pool wide open to stay joinable.
+    exit_df = fetch_batter_exitvelo_barrels(season, min_bbe="0")
     team_df = fetch_hitter_team_map(season=season, player_pool='ALL')
     hitter_stats = fetch_hitter_stats(season=season, player_pool='ALL')
     babip_map = {
@@ -119,7 +101,9 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
     """Transform pitcher expected stats into a more usable format for stats rendering."""
     min_pa = str(round(qualification_threshold('PITCHER', season))) if qualified_only else "0"
     pitcher_df = fetch_pitcher_expected_stats(season, min_pa=min_pa)
-    pitcher_exit_df = fetch_pitcher_exitvelo_barrels(season, min_bbe=min_pa)
+    ##Same BBE-vs-PA mismatch as hitters: pull the exit velo/barrel pool wide open since qualification
+    ##is already enforced by min_pa above.
+    pitcher_exit_df = fetch_pitcher_exitvelo_barrels(season, min_bbe="0")
     team_df = fetch_pitcher_team_map(season=season, player_pool='ALL')
 
     ##I fundamentally disagree with a BABIP reconstruction for picthers for a few reasons

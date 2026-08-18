@@ -5,6 +5,7 @@
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from data.team_abbreviations import get_team_abbreviation
 from ..stats.config import STAT_CONFIG
+from ..stats.pitcher_role import pitcher_position
 
 
 def _is_pitcher(player: dict) -> bool:
@@ -89,7 +90,7 @@ def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 202
             'name': p['player']['fullName'],
             'team': get_team_abbreviation(p['team']['name']),
             'team_name': p['team']['name'],
-            'position': p['position']['abbreviation'],
+            'position': pitcher_position(p) if type == 'pitching' else p['position']['abbreviation'],
             stat: p['stat'].get(stat),
         }
         for p in top_5

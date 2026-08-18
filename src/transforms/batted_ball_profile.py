@@ -7,34 +7,19 @@ from ..constants import DATA_DIR
 from .statcast_batting import expected_stats_list
 from ..stats.percentiles import add_percentiles
 from ..stats.qualification import filter_qualified
+from ..stats.pitcher_role import build_role_lookup
 import json
-import statsapi
 
 ##loading roster for number lookup
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
 rosters = {p['name']: p for p in roster_list} 
-_number_by_player_id = {}
 
 
 def _lookup_jersey_number(full_name: str, player_id: int):
-    """Get jersey number from roster first, then fallback to MLB person endpoint."""
-    number = rosters.get(full_name, {}).get('number')
-    if number:
-        return number
-
-    if player_id in _number_by_player_id:
-        return _number_by_player_id[player_id]
-
-    try:
-        person_data = statsapi.get('person', {'personId': player_id})
-        number = person_data.get('people', [{}])[0].get('primaryNumber')
-    except Exception:
-        number = None
-
-    _number_by_player_id[player_id] = number
-    return number
+    """Get jersey number from roster.json. Returns None if the player isn't listed (roster is refreshed at startup)."""
+    return rosters.get(full_name, {}).get('number')
 
 def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
@@ -84,6 +69,7 @@ def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[
     splits = fetch_advanced_pitching(season, player_pool='ALL')
     if qualified_only:
         splits = filter_qualified(splits, 'PITCHER', season)
+    role_lookup = build_role_lookup(season)
     players = []
     
     for p in splits:
@@ -93,7 +79,7 @@ def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[
             'name': p['player']['fullName'],
             'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
             'team': p['team']['name'],
-            'position': p['position']['abbreviation'],
+            'position': role_lookup.get(p['player']['id'], 'RP'),
             'stats': {
                 'totalSwings': stat.get('totalSwings'),
                 'swingAndMisses': stat.get('swingAndMisses'),
@@ -142,5 +128,5 @@ if __name__ == "__main__":
     players = player_list(season=2026, qualified_only=True)
     
     ##only pitchers
-    players = [p for p in players if p['position'] == 'P']
+    players = [p for p in players if p['position'] in ('SP', 'RP')]
     print(players[:5])  # Print top player

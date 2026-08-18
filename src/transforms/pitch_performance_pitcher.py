@@ -124,7 +124,7 @@ def pitch_performance_pitcher(season: int = 2026, qualified_only: bool = True) -
         position = first.get('position')
 
         # Keep this transform pitcher-only; exclude position players with occasional pitching appearances.
-        if position not in ('P', 'TWP'):
+        if position not in ('SP', 'RP', 'TWP'):
             continue
 
         pitches = {}

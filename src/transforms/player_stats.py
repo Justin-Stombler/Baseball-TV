@@ -6,33 +6,18 @@ from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 from ..stats.qualification import filter_qualified
+from ..stats.pitcher_role import pitcher_position
 import json
-import statsapi
 
 ##loading roster for number lookup
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
 rosters = {p['name']: p for p in roster_list}
-_number_by_player_id = {}
 
 def _lookup_jersey_number(full_name: str, player_id: int):
-    """Get jersey number from roster first, then fallback to MLB person endpoint."""
-    number = rosters.get(full_name, {}).get('number')
-    if number:
-        return number
-
-    if player_id in _number_by_player_id:
-        return _number_by_player_id[player_id]
-
-    try:
-        person_data = statsapi.get('person', {'personId': player_id})
-        number = person_data.get('people', [{}])[0].get('primaryNumber')
-    except Exception:
-        number = None
-
-    _number_by_player_id[player_id] = number
-    return number 
+    """Get jersey number from roster.json. Returns None if the player isn't listed (roster is refreshed at startup)."""
+    return rosters.get(full_name, {}).get('number')
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
@@ -74,7 +59,7 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
             'name': p['player']['fullName'],
             'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
             'team': p['team']['name'],
-            'position': p['position']['abbreviation'],
+            'position': pitcher_position(p),
             'stats': {
                 'inningsPitched': stat.get('inningsPitched'),
                 'era': stat.get('era'),
@@ -100,5 +85,5 @@ if __name__ == "__main__":
     players = player_list(season=2026, qualified_only=True)
     
     ##only pitchers
-    players = [p for p in players if p['position'] == 'P']
+    players = [p for p in players if p['position'] in ('SP', 'RP')]
     print(players[:5])  # Print top player
