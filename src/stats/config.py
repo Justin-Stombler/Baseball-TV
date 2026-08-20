@@ -34,7 +34,7 @@ STAT_CONFIG = {
     "era":                  {"ascending": True,  "type": "pitching", "agg": "rate", "label": "ERA", "active": True, "team_leaderboard_active": True},
     "whip":                 {"ascending": True,  "type": "pitching", "agg": "rate", "label": "WHIP", "active": True, "team_leaderboard_active": True},
     "wins":                 {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Wins", "active": True, "team_leaderboard_active": True},
-    "saves":                {"ascending": True, "type": "pitching", "agg": "sum",  "label": "Saves", "active": True, "team_leaderboard_active": True},
+    "saves":                {"ascending": False, "type": "pitching", "agg": "sum",  "label": "Saves", "active": True, "team_leaderboard_active": True},
     "pitchingStrikeOuts":   {"ascending": False, "type": "pitching", "agg": "sum",  "label": "SO", "active": True, "team_leaderboard_active": True},
     "strikeoutsPer9Inn":    {"ascending": False, "type": "pitching", "agg": "rate", "label": "K/9", "active": True, "team_leaderboard_active": True},
     "inningsPitched":       {"ascending": False, "type": "pitching", "agg": "sum",  "label": "IP", "active": True, "team_leaderboard_active": True},

@@ -16,7 +16,7 @@ from src.render.team_profiles import render_team_profiles
 from src.render.pitch_performance import render_pitch_performance
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
-from src.render.team_schedule import render_team_schedule
+from src.render.box_score import render_division_box_scores
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
@@ -29,7 +29,7 @@ from src.transforms.team_profiles import generate_team_profile
 from src.transforms.pitch_performance_pitcher import pitch_performance_pitcher
 from src.transforms.pitch_performance_hitter import pitch_performance_hitter
 from src.transforms.standings import generate_division_standings, generate_wild_card_standings
-from src.transforms.team_schedule import generate_team_schedule
+from src.transforms.box_score import generate_division_box_scores
 
 # lowercase abbreviation (e.g. "bos") -> full team name (e.g. "Boston Red Sox")
 TEAM_BY_ABBREVIATION = {abbr.lower(): name for name, abbr in TEAM_ABBREVIATIONS.items()}
@@ -214,18 +214,6 @@ def run_sting_test(previous: str | None, group: str | None = None, team: str | N
     print("Pushed mode: stings")
     return current
 
-def run_team_schedule_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
-    cfg = DISPLAY_CONFIG["team_schedule"]
-    profiles = generate_team_profile()
-    if team:
-        matching = [p for p in profiles if p.get("team_name") == team]
-        profiles = matching or profiles
-    selected = random.choice(profiles)
-    schedule = generate_team_schedule(selected["team_id"], selected["team_name"])
-    current = display(render_team_schedule(schedule), cfg["duration"], previous=previous)
-    print("Pushed mode: team_schedule")
-    return current
-
 def run_division_standings_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["division_standings"]
     next_league = getattr(run_division_standings_test, "_next_league", "AL")
@@ -258,6 +246,27 @@ def run_wildcard_standings_test(previous: str | None, group: str | None = None, 
 
     run_wildcard_standings_test._next_league = "NL" if next_league == "AL" else "AL"
     print(f"Pushed mode: wildcard_standings ({next_league})")
+    return current
+
+
+# Cycles through all 6 divisions (AL/NL x East/Central/West) one call at a time.
+_BOX_SCORE_DIVISIONS = [(league, division) for league in ("AL", "NL") for division in ("East", "Central", "West")]
+
+
+def run_box_score_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
+    cfg = DISPLAY_CONFIG["box_score"]
+    index = getattr(run_box_score_test, "_next_index", 0)
+    league, division = _BOX_SCORE_DIVISIONS[index]
+
+    games = generate_division_box_scores(league=league, division=division)
+    current = display(
+        render_division_box_scores(games, division=division, league=league),
+        cfg["duration"],
+        previous=previous,
+    )
+
+    run_box_score_test._next_index = (index + 1) % len(_BOX_SCORE_DIVISIONS)
+    print(f"Pushed mode: box_score ({league} {division})")
     return current
 
 def run_pitch_performance_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
@@ -316,7 +325,7 @@ MODE_DISPATCH = {
     "9": ("wildcard_standings", run_wildcard_standings_test),
     "10": ("team_profiles", run_team_profiles_test),
     "11": ("pitch_performance", run_pitch_performance_test),
-    "12": ("team_schedule", run_team_schedule_test),
+    "12": ("box_score", run_box_score_test),
 }
 
 

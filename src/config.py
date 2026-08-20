@@ -14,11 +14,11 @@ DISPLAY_CONFIG = {
     "pitch_performance": {"duration": 5, "count": 3},
 
 ##team cycle
-    "team_profiles": {"duration": 7, "count": 3},
+    "team_profiles": {"duration": 5, "count": 3},
     "team_leaderboard": {"duration": 5, "count": 1, "stat_count": 2, "team_count": 3, "min_ab": 20, "min_ip": 10},
-    "team_schedule": {"duration": 7, "count": 3},
 
 ##league cycle
+    "box_score": {"duration": 7},
     "division_standings": {"duration": 5, "count": 3},
     "wildcard_standings": {"duration": 5, "count": 2},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},

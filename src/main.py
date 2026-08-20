@@ -7,6 +7,7 @@ from .transforms.statcast_batting import expected_stats_list
 from .transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from .transforms.team_profiles import generate_team_profile
 from .transforms.standings import generate_division_standings, generate_wild_card_standings
+from .transforms.box_score import generate_division_box_scores
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
 from .render.leaderboard import render_leaderboard
@@ -18,6 +19,7 @@ from .render.team_leaderboard import render_team_leaderboard
 from .render.team_profiles import render_team_profiles
 from .render.division_standings import render_division_standings
 from .render.wildcard_standings import render_wildcard_standings
+from .render.box_score import render_division_box_scores
 from .push import push, delete
 from .config import DISPLAY_CONFIG
 from .stats.config import STAT_CONFIG
@@ -72,12 +74,15 @@ if __name__ == "__main__":
     sb = DISPLAY_CONFIG["statcast_batting"]
     ds = DISPLAY_CONFIG["division_standings"]
     ws = DISPLAY_CONFIG["wildcard_standings"]
+    bs = DISPLAY_CONFIG["box_score"]
     tp = DISPLAY_CONFIG["team_profiles"]
     stings_cfg = DISPLAY_CONFIG["stings"]
     startup_cfg = DISPLAY_CONFIG["startup"]
     
     # Standings cycle: 0=AL divisions, 1=NL divisions, 2=wildcard
     standings_cycle = 0
+    # Box score cycle: 0=AL, 1=NL (independent of standings_cycle, so it'll drift out of sync)
+    box_score_cycle = 0
     
     # Run startup sequence on first boot
     previous = startup_sequence(startup_cfg)
@@ -188,6 +193,16 @@ if __name__ == "__main__":
             print("Pushed mode: wildcard_standings (AL, NL)")
 
         standings_cycle = (standings_cycle + 1) % 3
+        
+        # Box score: alternate AL, NL each pass through the loop; always shows East/Central/West
+        box_score_league = "AL" if box_score_cycle == 0 else "NL"
+        divisions = ["East", "Central", "West"]
+        for division in divisions:
+            games = generate_division_box_scores(league=box_score_league, division=division)
+            previous = display(render_division_box_scores(games, division=division, league=box_score_league), bs["duration"], previous)
+        print(f"Pushed mode: box_score ({box_score_league} East/Central/West)")
+
+        box_score_cycle = (box_score_cycle + 1) % 2
 
         for _ in range(stings_cfg["count"]):
             sting_text = random.choice(stings)
