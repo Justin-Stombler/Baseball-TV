@@ -14,16 +14,22 @@ import json
 with open(DATA_DIR / "roster.json") as f:
     roster_list = json.load(f)
 
-rosters = {p['name']: p for p in roster_list} 
+rosters_by_id = {p['id']: p for p in roster_list if p.get('id') is not None}
+rosters_by_name = {p['name']: p for p in roster_list}
 
 
 def _lookup_jersey_number(full_name: str, player_id: int):
-    """Get jersey number from roster.json. Returns None if the player isn't listed (roster is refreshed at startup)."""
-    return rosters.get(full_name, {}).get('number')
+    """Get jersey number from roster.json, by id first then name. Returns None if the player isn't listed."""
+    if player_id in rosters_by_id:
+        return rosters_by_id[player_id].get('number')
+    return rosters_by_name.get(full_name, {}).get('number')
 
 def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
     splits = fetch_advanced_hitting(season, player_pool='ALL')
+    ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
+    ##renders (leaderboards use qualified_only separately and are unaffected).
+    splits = [p for p in splits if p['player']['id'] in rosters_by_id]
     if qualified_only:
         splits = filter_qualified(splits, 'HITTER', season)
     players = []
@@ -67,6 +73,9 @@ def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[d
 def pitcher_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform pitcher stats into a more usable format for stats rendering."""
     splits = fetch_advanced_pitching(season, player_pool='ALL')
+    ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
+    ##renders (leaderboards use qualified_only separately and are unaffected).
+    splits = [p for p in splits if p['player']['id'] in rosters_by_id]
     if qualified_only:
         splits = filter_qualified(splits, 'PITCHER', season)
     role_lookup = build_role_lookup(season)

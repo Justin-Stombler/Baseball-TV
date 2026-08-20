@@ -41,25 +41,23 @@ TEAMS = {
 def fetch_roster_for_team(team_id, team_name, roster_type='40Man',
                          season=datetime.now().year,
                          date=None):
-    """Fetch roster for a single team."""
+    """Fetch roster for a single team via the structured team_roster endpoint (includes player id)."""
     try:
-        roster_str = statsapi.roster(
-            teamId=team_id,
-            rosterType=roster_type,
-            season=season,
-            date=date
-        )
+        params = {'teamId': team_id, 'rosterType': roster_type, 'season': season}
+        if date:
+            params['date'] = date
+        data = statsapi.get('team_roster', params)
 
         roster = []
-        for line in roster_str.strip().splitlines():
-            parts = line.split()
-            if len(parts) >= 3:
-                roster.append({
-                    "team": team_name,
-                    "number": parts[0].lstrip("#"),
-                    "position": parts[1],
-                    "name": " ".join(parts[2:])
-                })
+        for entry in data.get('roster', []):
+            person = entry.get('person', {})
+            roster.append({
+                "id": person.get('id'),
+                "team": team_name,
+                "number": entry.get('jerseyNumber') or "",
+                "position": entry.get('position', {}).get('abbreviation', ''),
+                "name": person.get('fullName', ''),
+            })
 
         return roster
     except Exception as e:
@@ -72,13 +70,14 @@ def fetch_all_rosters(roster_type='40Man',
                      date=None):
     """Fetch rosters for all MLB teams."""
     all_rosters = []
-    
+
     for team_id, team_name in TEAMS.items():
         print(f"Fetching {team_name}...")
         roster = fetch_roster_for_team(team_id, team_name, roster_type, season, date)
         all_rosters.extend(roster)
-    
+
     return all_rosters
+
 
 
 if __name__ == "__main__":

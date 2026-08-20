@@ -25,6 +25,12 @@ def _normalize_name(name: str) -> str:
     return " ".join(ascii_name.lower().strip().split())
 
 
+rosters_by_id = {
+    player['id']: player
+    for player in roster_list
+    if player.get('id') is not None
+}
+
 rosters_by_name = {
     _normalize_name(player.get("name", "")): player
     for player in roster_list
@@ -42,7 +48,9 @@ def _display_name(raw_name: str) -> str:
 
 
 def _roster_number_for_name(display_name: str, player_id: int = None):
-    """Get jersey number from roster.json by normalized name. Returns None if not listed (roster is refreshed at startup)."""
+    """Get jersey number from roster.json, by id first then normalized name. Returns None if not listed."""
+    if player_id in rosters_by_id:
+        return rosters_by_id[player_id].get('number')
     return rosters_by_name.get(_normalize_name(display_name), {}).get("number")
 
 
@@ -65,6 +73,9 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
     ## merge on player_id so each hitter row gets exit velo/barrel data and roster metadata
     merged = hitter_df.merge(exit_df[['player_id', 'avg_hit_speed', 'brl_percent', 'avg_hit_angle', 'barrels', 'avg_distance']], on='player_id', how='left')
     merged = merged.merge(team_df[['player_id', 'team', 'position']], on='player_id', how='inner')
+    ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
+    ##renders (leaderboards use qualified_only separately and are unaffected).
+    merged = merged[merged['player_id'].isin(rosters_by_id.keys())]
     merged['babip'] = merged['player_id'].map(babip_map)
     players = []
 
@@ -130,6 +141,9 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
         how='left',
     )
     merged = merged.merge(team_df[['player_id', 'team', 'position']], on='player_id', how='inner')
+    ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
+    ##renders (leaderboards use qualified_only separately and are unaffected).
+    merged = merged[merged['player_id'].isin(rosters_by_id.keys())]
     merged['babip_against'] = merged['player_id'].map(babip_against_map)
     players = []
 

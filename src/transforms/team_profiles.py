@@ -82,6 +82,7 @@ def generate_team_profile(season: int = 2026, standings_type: str = "regularSeas
 		{
 			"league_name": r.get("league_name"),
 			"division_name": r.get("division_name"),
+			"team_id": r.get("team_id"),
 			"team_name": r.get("team_name"),
 			"manager": manager_by_team.get(r.get("team_name")),
 			"wins": r.get("wins"),

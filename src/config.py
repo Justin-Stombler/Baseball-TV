@@ -16,6 +16,7 @@ DISPLAY_CONFIG = {
 ##team cycle
     "team_profiles": {"duration": 7, "count": 3},
     "team_leaderboard": {"duration": 5, "count": 1, "stat_count": 2, "team_count": 3, "min_ab": 20, "min_ip": 10},
+    "team_schedule": {"duration": 7, "count": 3},
 
 ##league cycle
     "division_standings": {"duration": 5, "count": 3},
