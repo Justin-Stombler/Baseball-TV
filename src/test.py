@@ -12,7 +12,7 @@ from src.render.batted_ball_profile import render_batted_ball_profile
 from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
-from src.render.team_profiles import render_team_profiles
+from src.render.expanded_team_profile import render_expanded_team_profile
 from src.render.pitch_performance import render_pitch_performance
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
@@ -196,15 +196,15 @@ def run_team_leaderboard_test(previous: str | None, group: str | None = None, te
     print(f"Pushed mode: team_leaderboard ({selected_team}, {stat})")
     return current
 
-def run_team_profiles_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
+def run_expanded_team_profile_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["team_profiles"]
     profiles = generate_team_profile()
     if team:
         matching = [p for p in profiles if p.get("team_name") == team]
         profiles = matching or profiles
     selected = random.choice(profiles)
-    current = display(render_team_profiles(selected), cfg["duration"], previous=previous)
-    print("Pushed mode: team_profiles")
+    current = display(render_expanded_team_profile(selected), cfg["duration"], previous=previous)
+    print("Pushed mode: expanded_team_profile")
     return current
 
 def run_sting_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
@@ -323,7 +323,7 @@ MODE_DISPATCH = {
     "7": ("team_leaderboard", run_team_leaderboard_test),
     "8": ("division_standings", run_division_standings_test),
     "9": ("wildcard_standings", run_wildcard_standings_test),
-    "10": ("team_profiles", run_team_profiles_test),
+    "10": ("team_profiles", run_expanded_team_profile_test),
     "11": ("pitch_performance", run_pitch_performance_test),
     "12": ("box_score", run_box_score_test),
 }

@@ -4,6 +4,7 @@
 
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from data.team_abbreviations import get_team_abbreviation
+from data.roster import is_rostered, get_team
 from ..stats.config import STAT_CONFIG
 
 def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "avg", qualified_only: bool = True) -> list[dict]:
@@ -19,6 +20,11 @@ def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "av
     else:
         raise ValueError("Type must be 'hitter' or 'pitcher'")
 
+    ##Only players still on a current roster should ever appear on a leaderboard, even if
+    ##their season stats still qualify. Drops anyone released, DFA'd, or traded off their
+    ##original team's stats split.
+    splits = [p for p in splits if is_rostered(p['player']['id'])]
+
     league_players = [p for p in splits if p['league']['name'] == league]
     league_players = [p for p in league_players if p.get('stat', {}).get(stat) is not None]
 
@@ -31,8 +37,8 @@ def generate_leaderboard(season: int = 2026, league: str = "AL", stat: str = "av
         {
             'league': p['league']['name'],
             'name': p['player']['fullName'],
-            'team': get_team_abbreviation(p['team']['name']),
-            'team_name': p['team']['name'],
+            'team': get_team_abbreviation(get_team(p['player']['id'])),
+            'team_name': get_team(p['player']['id']),
             stat: p['stat'].get(stat),
         }
         for p in top_5

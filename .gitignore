@@ -2,6 +2,7 @@
 *.json
 *.doc
 *.jpg
+*.md
 *.png
 
 /.venv

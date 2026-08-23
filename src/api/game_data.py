@@ -3,17 +3,17 @@ from datetime import datetime, timedelta
 from ..constants import GAME_DAY_TIMEZONE
 
 
-def fetch_team_game(team_id: int, days_back: int = 10) -> dict | None:
-    """Find a team's most recently completed game within the lookback window."""
-    today = datetime.now(GAME_DAY_TIMEZONE)
-    start_date = (today - timedelta(days=days_back)).strftime('%m/%d/%Y')
-    end_date = today.strftime('%m/%d/%Y')
-
-    games = statsapi.schedule(team=team_id, start_date=start_date, end_date=end_date)
+def fetch_team_game(team_id: int) -> dict | None:
+    """Find a team's completed game from the prior game day (yesterday, Eastern date).
+    Returns None if the team didn't play a Final game yesterday, rather than falling
+    back to an older game."""
+    yesterday = (datetime.now(GAME_DAY_TIMEZONE) - timedelta(days=1)).strftime('%m/%d/%Y')
+    games = statsapi.schedule(team=team_id, start_date=yesterday, end_date=yesterday)
     if not games:
         return None
 
-    games.sort(key=lambda g: g['game_date'])
+    ##prefer the latest game_num in case of doubleheaders
+    games.sort(key=lambda g: g.get('game_num', 1))
 
     final_games = [g for g in games if g['status'] == 'Final']
     if final_games:

@@ -4,6 +4,7 @@
 
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
 from data.team_abbreviations import get_team_abbreviation
+from data.roster import is_rostered, get_team
 from ..stats.config import STAT_CONFIG
 from ..stats.pitcher_role import pitcher_position
 
@@ -38,9 +39,9 @@ def get_available_teams(
         raise ValueError("Type must be 'hitter' or 'pitcher'")
 
     teams = {
-        p['team']['name']
+        get_team(p['player']['id'])
         for p in splits
-        if p.get('team', {}).get('name')
+        if is_rostered(p['player']['id'])
         and p.get('stat', {}).get(stat) is not None
         and _to_float_or_none(p.get('stat', {}).get(stat)) is not None
         and (stat_type != 'pitching' or _is_pitcher(p))
@@ -60,7 +61,9 @@ def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 202
     else:
         raise ValueError("Type must be 'hitter' or 'pitcher'")
 
-    team_players = [p for p in splits if p['team']['name'] == team]
+    ##Only players still on this team's current roster should ever appear here, even if their
+    ##season stats still qualify. Drops anyone released, DFA'd, or traded off this team.
+    team_players = [p for p in splits if is_rostered(p['player']['id']) and get_team(p['player']['id']) == team]
     team_players = [p for p in team_players if p.get('stat', {}).get(stat) is not None]
     
     ##Apply minimum at-bats or innings pitched filters
@@ -88,8 +91,8 @@ def generate_team_leaderboard(team: str = 'Baltimore Orioles', season: int = 202
         {
             'league': p['league']['name'],
             'name': p['player']['fullName'],
-            'team': get_team_abbreviation(p['team']['name']),
-            'team_name': p['team']['name'],
+            'team': get_team_abbreviation(get_team(p['player']['id'])),
+            'team_name': get_team(p['player']['id']),
             'position': pitcher_position(p) if type == 'pitching' else p['position']['abbreviation'],
             stat: p['stat'].get(stat),
         }

@@ -3,24 +3,10 @@
 ###2. Leave option to filter for only qualfied players
 
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
-from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 from ..stats.qualification import filter_qualified
 from ..stats.pitcher_role import pitcher_position
-import json
-
-##loading roster for number lookup
-with open(DATA_DIR / "roster.json") as f:
-    roster_list = json.load(f)
-
-rosters_by_id = {p['id']: p for p in roster_list if p.get('id') is not None}
-rosters_by_name = {p['name']: p for p in roster_list}
-
-def _lookup_jersey_number(full_name: str, player_id: int):
-    """Get jersey number from roster.json, by id first then name. Returns None if the player isn't listed."""
-    if player_id in rosters_by_id:
-        return rosters_by_id[player_id].get('number')
-    return rosters_by_name.get(full_name, {}).get('number')
+from data.roster import is_rostered, get_team, get_jersey_number
 
 def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""
@@ -28,7 +14,7 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
     ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
     ##renders (leaderboards use qualified_only separately and are unaffected). This drops anyone
     ##released, DFA'd, or otherwise off every roster even if they still have season stats on file.
-    splits = [p for p in splits if p['player']['id'] in rosters_by_id]
+    splits = [p for p in splits if is_rostered(p['player']['id'])]
     if qualified_only:
         splits = filter_qualified(splits, 'HITTER', season)
     players = []
@@ -38,8 +24,8 @@ def hitter_transform(season: int = 2026, qualified_only: bool = True) -> list[di
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
-            'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
-            'team': p['team']['name'],
+            'number': get_jersey_number(p['player']['fullName'], p['player']['id']),
+            'team': get_team(p['player']['id']),
             'position': p['position']['abbreviation'],
             'stats': {
                 'avg': stat.get('avg'),
@@ -57,7 +43,7 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
     splits = fetch_pitcher_stats(season, player_pool='ALL')
     ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
     ##renders (leaderboards use qualified_only separately and are unaffected).
-    splits = [p for p in splits if p['player']['id'] in rosters_by_id]
+    splits = [p for p in splits if is_rostered(p['player']['id'])]
     if qualified_only:
         splits = filter_qualified(splits, 'PITCHER', season)
     players = []
@@ -67,8 +53,8 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
         players.append({
             'id': p['player']['id'],
             'name': p['player']['fullName'],
-            'number': _lookup_jersey_number(p['player']['fullName'], p['player']['id']),
-            'team': p['team']['name'],
+            'number': get_jersey_number(p['player']['fullName'], p['player']['id']),
+            'team': get_team(p['player']['id']),
             'position': pitcher_position(p),
             'stats': {
                 'inningsPitched': stat.get('inningsPitched'),

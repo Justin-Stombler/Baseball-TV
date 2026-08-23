@@ -1,82 +1,50 @@
-from ..api.team_performance import fetch_team_performance
-from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
-from .managers import generate_manager_list
+from ..api.team_performance import fetch_team_performance, fetch_team_hitting_stats, fetch_team_pitching_stats
 
 
 def generate_team_profile(season: int = 2026, standings_type: str = "regularSeason") -> list[dict]:
 	"""Return team standings with aggregated batting/pitching stats and MLB/league ranks."""
 	rows = fetch_team_performance(season=season, standings_type=standings_type)
-	hitters = fetch_hitter_stats(season, player_pool='ALL')
-	pitchers = fetch_pitcher_stats(season, player_pool='ALL')
-	managers = generate_manager_list(season=season)
-	manager_by_team = {m.get('team'): m.get('name') for m in managers if m.get('team') and m.get('name')}
+	team_hitting_stats = fetch_team_hitting_stats(season)
+	team_pitching_stats = fetch_team_pitching_stats(season)
 
-	# Build team batting aggregates
+	def _to_float(value) -> float:
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			return 0.0
+
+	# Build team batting aggregates from official team-level season totals.
+	# This credits a traded player's stats to whichever team he earned them
+	# with, rather than lumping his whole season onto his current roster team.
 	team_hitting = {}
-	for p in hitters:
-		tn = p.get('team', {}).get('name')
-		if not tn:
-			continue
-		if tn not in team_hitting:
-			team_hitting[tn] = {
-				'hits': 0,
-				'abs': 0,
-				'hrs': 0,
-				'walks': 0,
-				'hbp': 0,
-				'sf': 0,
-				'total_bases': 0,
-				'strikeouts': 0,
-				'gidp': 0,
-			}
-		team_hitting[tn]['hits']        += float(p['stat'].get('hits') or 0)
-		team_hitting[tn]['abs']         += float(p['stat'].get('atBats') or 0)
-		team_hitting[tn]['hrs']         += float(p['stat'].get('homeRuns') or 0)
-		team_hitting[tn]['walks']       += float(p['stat'].get('baseOnBalls') or 0)
-		team_hitting[tn]['hbp']         += float(p['stat'].get('hitByPitch') or 0)
-		team_hitting[tn]['sf']          += float(p['stat'].get('sacFlies') or 0)
-		team_hitting[tn]['total_bases'] += float(p['stat'].get('totalBases') or 0)
-		team_hitting[tn]['strikeouts']  += float(p['stat'].get('strikeOuts') or 0)
-		team_hitting[tn]['gidp']        += float(p['stat'].get('groundIntoDoublePlay') or 0)
+	for tn, stat in team_hitting_stats.items():
+		team_hitting[tn] = {
+			'hits': _to_float(stat.get('hits')),
+			'abs': _to_float(stat.get('atBats')),
+			'hrs': _to_float(stat.get('homeRuns')),
+			'walks': _to_float(stat.get('baseOnBalls')),
+			'hbp': _to_float(stat.get('hitByPitch')),
+			'sf': _to_float(stat.get('sacFlies')),
+			'total_bases': _to_float(stat.get('totalBases')),
+			'strikeouts': _to_float(stat.get('strikeOuts')),
+			'gidp': _to_float(stat.get('groundIntoDoublePlay')),
+		}
 
-	# Build team pitching aggregates
+	# Build team pitching aggregates from official team-level season totals.
 	team_pitching = {}
-	for p in pitchers:
-		if p.get('position', {}).get('abbreviation') != 'P':
-			continue
-		tn = p.get('team', {}).get('name')
-		if not tn:
-			continue
-		if tn not in team_pitching:
-			team_pitching[tn] = {
-				'outs': 0,
-				'earned_runs': 0,
-				'walks': 0,
-				'intentional_walks': 0,
-				'hits': 0,
-				'ks': 0,
-				'home_runs_allowed': 0,
-				'hbp': 0,
-				'blown_saves': 0,
-			}
-		ip = p['stat'].get('inningsPitched')
-		if ip not in (None, ""):
-			ip_text = str(ip)
-			if "." not in ip_text:
-				team_pitching[tn]['outs'] += int(float(ip_text)) * 3
-			else:
-				whole, frac = ip_text.split(".", 1)
-				team_pitching[tn]['outs'] += int(float(whole)) * 3
-				if frac.startswith("1"): team_pitching[tn]['outs'] += 1
-				elif frac.startswith("2"): team_pitching[tn]['outs'] += 2
-		team_pitching[tn]['earned_runs'] += float(p['stat'].get('earnedRuns') or 0)
-		team_pitching[tn]['walks']       += float(p['stat'].get('baseOnBalls') or 0)
-		team_pitching[tn]['intentional_walks'] += float(p['stat'].get('intentionalWalks') or 0)
-		team_pitching[tn]['hits']        += float(p['stat'].get('hits') or 0)
-		team_pitching[tn]['ks']          += float(p['stat'].get('pitchingStrikeOuts') or 0)
-		team_pitching[tn]['home_runs_allowed'] += float(p['stat'].get('homeRuns') or 0)
-		team_pitching[tn]['hbp']               += float(p['stat'].get('hitBatsmen') or 0)
-		team_pitching[tn]['blown_saves']       += float(p['stat'].get('blownSaves') or 0)
+	for tn, stat in team_pitching_stats.items():
+		team_pitching[tn] = {
+			'outs': _to_float(stat.get('outs')),
+			'earned_runs': _to_float(stat.get('earnedRuns')),
+			'walks': _to_float(stat.get('baseOnBalls')),
+			'intentional_walks': _to_float(stat.get('intentionalWalks')),
+			'hits': _to_float(stat.get('hits')),
+			'ks': _to_float(stat.get('strikeOuts')),
+			'home_runs_allowed': _to_float(stat.get('homeRuns')),
+			'hbp': _to_float(stat.get('hitBatsmen')),
+			'blown_saves': _to_float(stat.get('blownSaves')),
+		}
+
 
 	profiles = [
 		{
@@ -84,7 +52,6 @@ def generate_team_profile(season: int = 2026, standings_type: str = "regularSeas
 			"division_name": r.get("division_name"),
 			"team_id": r.get("team_id"),
 			"team_name": r.get("team_name"),
-			"manager": manager_by_team.get(r.get("team_name")),
 			"wins": r.get("wins"),
 			"losses": r.get("losses"),
 			"pct": r.get("pct"),

@@ -16,7 +16,7 @@ from .render.statcast_batting import render_statcast_data
 from .render.startup import render_startup
 from .render.stings import render_sting, stings
 from .render.team_leaderboard import render_team_leaderboard
-from .render.team_profiles import render_team_profiles
+from .render.expanded_team_profile import render_expanded_team_profile
 from .render.division_standings import render_division_standings
 from .render.wildcard_standings import render_wildcard_standings
 from .render.box_score import render_division_box_scores
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         if profiles:
             for _ in range(tp["count"]):
                 team = random.choice(profiles)
-                previous = display(render_team_profiles(team), tp["duration"], previous)
+                previous = display(render_expanded_team_profile(team), tp["duration"], previous)
             print(f"Pushed mode: team_profiles ({tp['count']})")
         else:
             print("No team profile data available")

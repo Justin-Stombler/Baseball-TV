@@ -2,16 +2,12 @@ from datetime import datetime
 
 from ..api.game_data import fetch_team_game, fetch_box_score, fetch_team_game_today, fetch_live_game_state, fetch_probable_pitchers
 from ..api.team_performance import fetch_team_performance
-from ..constants import GAME_DAY_TIMEZONE, CUTOVER_TIME, UPCOMING_STATUSES, LIVE_STATUSES
+from ..constants import GAME_DAY_TIMEZONE, CUTOVER_TIME, UPCOMING_STATUSES, LIVE_STATUSES, FINAL_STATUSES
 
 
-def _completed_box_score(team_id: int) -> dict | None:
-    """Build a 'final' box score row for a team's most recently completed game."""
-    game = fetch_team_game(team_id)
-    if not game:
-        return None
-
-    data = fetch_box_score(game['game_id'])
+def _final_box_score(game_id: int, game_datetime: str | None) -> dict:
+    """Build a 'final' box score row from a game's box score data."""
+    data = fetch_box_score(game_id)
     linescore = data['linescore']
 
     innings = []
@@ -26,11 +22,11 @@ def _completed_box_score(team_id: int) -> dict | None:
     home_totals = linescore.get('teams', {}).get('home', {})
 
     return {
-        'game_id': game['game_id'],
+        'game_id': game_id,
         'away_name': data['away_name'],
         'home_name': data['home_name'],
         'status': 'final',
-        'game_datetime': game.get('game_datetime'),
+        'game_datetime': game_datetime,
         'scheduled_innings': linescore.get('scheduledInnings', 9),
         'innings': innings,
         'away_runs': away_totals.get('runs', 0),
@@ -40,6 +36,14 @@ def _completed_box_score(team_id: int) -> dict | None:
         'home_hits': home_totals.get('hits', 0),
         'home_errors': home_totals.get('errors', 0),
     }
+
+
+def _completed_box_score(team_id: int) -> dict | None:
+    """Build a 'final' box score row for a team's most recently completed game."""
+    game = fetch_team_game(team_id)
+    if not game:
+        return None
+    return _final_box_score(game['game_id'], game.get('game_datetime'))
 
 
 def generate_box_score(team_id: int, team_name: str) -> dict | None:
@@ -85,8 +89,10 @@ def generate_box_score(team_id: int, team_name: str) -> dict | None:
                 'current_inning': state.get('current_inning'),
                 'inning_state': state.get('inning_state'),
             }
+        if status in FINAL_STATUSES:
+            return _final_box_score(today_game['game_id'], today_game.get('game_datetime'))
 
-        ##today's game exists but isn't upcoming/live (e.g. already Final) — no
+        ##today's game exists but isn't upcoming/live/final (e.g. postponed) — no
         ##fallback to an older game past the cutover
         return None
 

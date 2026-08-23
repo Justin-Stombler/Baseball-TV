@@ -1,5 +1,36 @@
 import statsapi
 
+def fetch_team_hitting_stats(season: int = 2026) -> dict:
+	"""Fetch official team-level season hitting totals, keyed by team name.
+
+	Uses MLB's team stats endpoint so a traded player's production is credited
+	to whichever team he actually earned it with, instead of being lumped onto
+	his current roster team.
+	"""
+	data = statsapi.get("teams_stats", {
+		"stats": "season",
+		"group": "hitting",
+		"season": season,
+		"gameType": "R",
+		"sportIds": 1,
+	})
+	splits = data["stats"][0]["splits"]
+	return {s["team"]["name"]: s["stat"] for s in splits}
+
+
+def fetch_team_pitching_stats(season: int = 2026) -> dict:
+	"""Fetch official team-level season pitching totals, keyed by team name."""
+	data = statsapi.get("teams_stats", {
+		"stats": "season",
+		"group": "pitching",
+		"season": season,
+		"gameType": "R",
+		"sportIds": 1,
+	})
+	splits = data["stats"][0]["splits"]
+	return {s["team"]["name"]: s["stat"] for s in splits}
+
+
 def fetch_team_performance(season: int = 2026, standings_type: str = "regularSeason") -> list[dict]:
 	"""Fetch all MLB team standings and flatten into one list of team rows.
 

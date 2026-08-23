@@ -2,22 +2,32 @@ from ..api.jobs import fetch_jobs
 
 
 def generate_manager_list(season: int = 2026) -> list[dict]:
-    """Transform coaching staff data into a list of managers only."""
+    """Transform coaching staff data into a list of managers only.
+
+    A team can have both a 'Manager' and an 'Interim Manager' listed at once
+    when a mid-season change happens (statsapi keeps the outgoing manager's
+    entry around). Interim Manager, being the currently active one, wins.
+    """
     staff = fetch_jobs(season=season)
 
-    managers = []
+    managers_by_team: dict = {}
     for person in staff:
-        if person.get('job') != 'Manager':
+        job = person.get('job')
+        if job not in ('Manager', 'Interim Manager'):
             continue
-        managers.append({
+        team = person.get('teamName')
+        # Interim Manager takes precedence over Manager for the same team.
+        if team in managers_by_team and managers_by_team[team]['jobTitle'] == 'Interim Manager' and job != 'Interim Manager':
+            continue
+        managers_by_team[team] = {
             'id': person.get('person', {}).get('id'),
             'name': person.get('person', {}).get('fullName'),
-            'team': person.get('teamName'),
+            'team': team,
             'teamId': person.get('teamId'),
-            'jobTitle': person.get('job'),
-        })
+            'jobTitle': job,
+        }
 
-    return managers
+    return list(managers_by_team.values())
 
 
 if __name__ == "__main__":
