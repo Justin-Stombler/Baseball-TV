@@ -62,6 +62,7 @@ def pitcher_transform(season: int = 2026, qualified_only: bool = True) -> list[d
                 'whip': stat.get('whip'),
                 'homeRunsPer9': stat.get('homeRunsPer9'),
                 'pitchingStrikeOuts': stat.get('pitchingStrikeOuts'),
+                'strikeoutsPer9Inn': stat.get('strikeoutsPer9Inn')
             }
         })
     

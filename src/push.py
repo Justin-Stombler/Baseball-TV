@@ -23,6 +23,8 @@ def push(image: bytes, filename: str = None) -> str:
 
     uploaded = False
 
+    status_code = None
+
     for attempt in range(1, max_retries + 1):
         try:
             r = requests.post(
@@ -30,6 +32,7 @@ def push(image: bytes, filename: str = None) -> str:
                 files={"file": (f"{filename}", image, "image/jpeg")},
                 timeout=request_timeout
             )
+            status_code = r.status_code
             print(f"pushed as {filename}: {r.status_code}")
             uploaded = True
             break

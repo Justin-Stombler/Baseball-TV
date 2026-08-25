@@ -8,6 +8,17 @@ def fetch_all_player_bios(season: int = 2026) -> list[dict]:
     })
     return data.get('people', [])
 
+
+def fetch_player_hand(player_id: int) -> str | None:
+    """Fetch a single player's throwing hand ('R'/'L') by id. Lightweight — a single-player
+    call, not a season-wide pull — so it's fine to use per-card instead of per-league.
+    """
+    data = statsapi.get('people', {'personIds': player_id})
+    people = data.get('people', [])
+    if not people:
+        return None
+    return people[0].get('pitchHand', {}).get('code')
+
 ##returns lots of useful 'back of the card' information
 
 if __name__ == "__main__":

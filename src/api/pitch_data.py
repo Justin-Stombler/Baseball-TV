@@ -39,6 +39,12 @@ def fetch_statcast_pitcher_pitch_arsenal(year: int, minP: int = 250, arsenal_typ
 
     return pybaseball.statcast_pitcher_pitch_arsenal(year, minP=minP, arsenal_type=arsenal_type)
 
+
+def fetch_statcast_pitcher_pitches(start_dt: str, end_dt: str, player_id: int) -> pd.DataFrame:
+    """Retrieves pitch-by-pitch Statcast rows for one pitcher and date range."""
+
+    return pybaseball.statcast_pitcher(start_dt=start_dt, end_dt=end_dt, player_id=player_id)
+
 def fetch_statcast_pitcher_arsenal_stats(year: int, minPA: int = 25) -> pd.DataFrame:
     """Retrieves detailed stats on each pitcher's arsenal in a given year."""
 

@@ -13,7 +13,7 @@ from src.render.statcast_batting import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
 from src.render.expanded_team_profile import render_expanded_team_profile
-from src.render.pitch_performance import render_pitch_performance
+from src.render.pitch_arsenal import render_pitch_arsenal
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
 from src.render.box_score import render_division_box_scores
@@ -26,8 +26,7 @@ from src.transforms.batted_ball_profile import player_list as batted_ball_player
 from src.transforms.statcast_batting import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from src.transforms.team_profiles import generate_team_profile
-from src.transforms.pitch_performance_pitcher import pitch_performance_pitcher
-from src.transforms.pitch_performance_hitter import pitch_performance_hitter
+from src.transforms.pitch_arsenal import generate_pitch_arsenal
 from src.transforms.standings import generate_division_standings, generate_wild_card_standings
 from src.transforms.box_score import generate_division_box_scores
 
@@ -269,48 +268,28 @@ def run_box_score_test(previous: str | None, group: str | None = None, team: str
     print(f"Pushed mode: box_score ({league} {division})")
     return current
 
-def run_pitch_performance_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
-    cfg = DISPLAY_CONFIG["pitch_performance"]
+def run_pitch_arsenal_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
+    cfg = DISPLAY_CONFIG["pitch_arsenal"]
 
     if group == "hitter":
-        hitters = filter_players(pitch_performance_hitter(), team=team)
-        if not hitters:
-            print(f"No pitch performance data available for hitters, team '{team}'. Try again.")
-            return previous
-        selected_group = "hitter"
-        player = random.choice(hitters)
-    elif group == "pitcher":
-        pitchers = filter_players(pitch_performance_pitcher(), team=team)
-        if not pitchers:
-            print(f"No pitch performance data available for pitchers, team '{team}'. Try again.")
-            return previous
-        selected_group = "pitcher"
-        player = random.choice(pitchers)
-    else:
-        hitters = filter_players(pitch_performance_hitter(), team=team)
-        pitchers = filter_players(pitch_performance_pitcher(), team=team)
+        print("pitch_arsenal is pitcher-only; ignoring hitter group filter.")
 
-        if not hitters and not pitchers:
-            print(f"No pitch performance data available for hitters or pitchers, team '{team}'. Try again.")
-            return previous
+    pitchers = filter_players(generate_pitch_arsenal(qualified_only=True), group="pitcher", team=team)
+    if not pitchers:
+        print(f"No pitch arsenal pitcher data available for team '{team}'. Try again.")
+        return previous
 
-        # Alternate so both datasets are exercised during test runs.
-        next_group = getattr(run_pitch_performance_test, "_next_group", "hitter")
-        if next_group == "hitter" and hitters:
-            selected_group = "hitter"
-            player = random.choice(hitters)
-            run_pitch_performance_test._next_group = "pitcher"
-        elif pitchers:
-            selected_group = "pitcher"
-            player = random.choice(pitchers)
-            run_pitch_performance_test._next_group = "hitter"
-        else:
-            selected_group = "hitter"
-            player = random.choice(hitters)
-            run_pitch_performance_test._next_group = "pitcher"
+    player = random.choice(pitchers)
+    detailed = generate_pitch_arsenal(
+        player_id=player["player_id"],
+        qualified_only=True,
+        include_movement=True,
+    )
+    if detailed:
+        player = detailed[0]
 
-    current = display(render_pitch_performance(player), cfg["duration"], previous=previous)
-    print(f"Pushed mode: pitch_performance ({selected_group})")
+    current = display(render_pitch_arsenal(player), cfg["duration"], previous=previous)
+    print("Pushed mode: pitch_arsenal (pitcher)")
     return current
 
 MODE_DISPATCH = {
@@ -324,7 +303,7 @@ MODE_DISPATCH = {
     "8": ("division_standings", run_division_standings_test),
     "9": ("wildcard_standings", run_wildcard_standings_test),
     "10": ("team_profiles", run_expanded_team_profile_test),
-    "11": ("pitch_performance", run_pitch_performance_test),
+    "11": ("pitch_arsenal", run_pitch_arsenal_test),
     "12": ("box_score", run_box_score_test),
 }
 
