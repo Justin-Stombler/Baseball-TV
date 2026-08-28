@@ -19,10 +19,16 @@ def classify_role(games_started, games_pitched, default: str = 'RP') -> str:
 
 
 def pitcher_position(split: dict) -> str:
-    """Return 'TWP', 'SP', or 'RP' for a statsapi pitcher stat split (needs gamesStarted/gamesPitched in split['stat'])."""
+    """Return 'TWP', 'SP', or 'RP' for a statsapi pitcher stat split (needs gamesStarted/gamesPitched in split['stat']).
+
+    Splits whose true fielding position isn't 'P'/'TWP' (e.g. a position player's mop-up
+    pitching appearance) are returned unchanged instead of being classified as SP/RP.
+    """
     abbreviation = split.get('position', {}).get('abbreviation')
     if abbreviation == 'TWP':
         return 'TWP'
+    if abbreviation not in (None, 'P'):
+        return abbreviation
     stat = split.get('stat', {})
     return classify_role(stat.get('gamesStarted'), stat.get('gamesPitched'))
 

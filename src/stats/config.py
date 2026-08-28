@@ -26,9 +26,11 @@ STAT_CONFIG = {
     "woba":                  {"ascending": False, "type": "hitting",  "agg": "rate", "label": "wOBA", "active": False, "team_leaderboard_active": False},
     'xwoba':                 {"ascending": False, "type": "hitting",  "agg": "rate", "label": "xwOBA", "active": False, "team_leaderboard_active": False},
     'exit_velocity':         {"ascending": False, "type": "hitting",  "agg": "rate", "label": "AVG. EV", "active": False, "team_leaderboard_active": False},
-    'barrel_rate':          {"ascending": False, "type": "hitting",  "agg": "rate", "label": "BARREL RATE", "active": False, "team_leaderboard_active": False},
+    'barrel_rate':          {"ascending": False, "type": "hitting",  "agg": "rate", "label": "BARREL %", "active": False, "team_leaderboard_active": False},
     'avg_distance':         {"ascending": False, "type": "hitting",  "agg": "rate", "label": "AVG. DIST", "active": False, "team_leaderboard_active": False},
     'slg_diff': {"ascending": False, "type": "hitting",  "agg": "rate", "label": "xSLG ADJUSTMENT", "active": False, "team_leaderboard_active": False},
+    'avg_bat_speed':         {"ascending": False, "type": "hitting",  "agg": "rate", "label": "BAT SPEED", "active": False, "team_leaderboard_active": False},
+    'whiff_percent':         {"ascending": True, "type": "hitting",  "agg": "rate", "label": "WHIFF %", "active": False, "team_leaderboard_active": False},
 
 
     "era":                  {"ascending": True,  "type": "pitching", "agg": "rate", "label": "ERA", "active": True, "team_leaderboard_active": True},
@@ -51,16 +53,17 @@ STAT_CONFIG = {
     "woba_against":                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "wOBA", "active": False, "team_leaderboard_active": False},
     'xwoba_against':                 {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xwOBA", "active": False, "team_leaderboard_active": False},
     'xba_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xBA AGAINST", "active": False, "team_leaderboard_active": False},
-    'babip_against':                 {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BABIP AGAINST", "active": False, "team_leaderboard_active": False},
+    'babip_against':                 {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BABIP", "active": False, "team_leaderboard_active": False},
     'xslg_against':                  {"ascending": True, "type": "pitching",  "agg": "rate", "label": "xSLG", "active": False, "team_leaderboard_active": False},
     'slg_against':                   {"ascending": True, "type": "pitching",  "agg": "rate", "label": "SLG", "active": False, "team_leaderboard_active": False},
     'exit_velocity_against':         {"ascending": True, "type": "pitching",  "agg": "rate", "label": "AVG. EV", "active": False, "team_leaderboard_active": False},
-    'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL RATE", "active": False, "team_leaderboard_active": False},
+    'barrel_rate_against':          {"ascending": True, "type": "pitching",  "agg": "rate", "label": "BARREL %", "active": False, "team_leaderboard_active": False},
     'avg_distance':         {"ascending": False, "type": "pitching",  "agg": "rate", "label": "AVG. DIST", "active": False, "team_leaderboard_active": False},
     'era_diff': {"ascending": False, "type": "pitching",  "agg": "rate", "label": "xERA ADJUSTMENT", "active": False, "team_leaderboard_active": False},
     'ba':                   {"ascending": True,  "type": "pitching",  "agg": "rate", "label": "BA", "active": False, "team_leaderboard_active": False},
     'hard_hit_percent':     {"ascending": True,  "type": "pitching",  "agg": "rate", "label": "Hard Hit %", "active": False, "team_leaderboard_active": False},
-    'whiff_percent':        {"ascending": False, "type": "pitching",  "agg": "rate", "label": "Whiff %", "active": False, "team_leaderboard_active": False},
+    'whiff_percent_against':        {"ascending": False, "type": "pitching",  "agg": "rate", "label": "WHIFF %", "active": False, "team_leaderboard_active": False},
+    'fastball_velo':        {"ascending": False, "type": "pitching",  "agg": "rate", "label": "FB. VELO", "active": False, "team_leaderboard_active": True},
 }
 
 HISTORY_CONFIG = {
@@ -83,5 +86,25 @@ HISTORY_CONFIG = {
         "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": True},
         "era": {"type": "pitching", "label": "ERA", "active": True},
     }
+}
+
+##controls both the row count and which stat columns show up for the
+##recent-appearances (per-game) table. add/remove a stat by adding a line
+##or flipping "active"; change how many games are shown by editing "games".
+##"order" controls left-to-right column position (lower = further left) —
+##change the number to reorder without moving lines around.
+RECENT_APPEARANCES_CONFIG = {
+    "games": 6,
+    "stats": {
+        "atBats":         {"type": "hitting",  "label": "AB",  "active": True, "order": 1},
+        "hits":           {"type": "both",     "label": "H",   "active": True, "order": 2},
+        "totalBases":     {"type": "hitting",  "label": "TB",  "active": True, "order": 3},
+        "rbi":            {"type": "hitting",  "label": "RBI", "active": True, "order": 4},
+        "strikeOuts":     {"type": "both",     "label": "K",   "active": True, "order": 5},
+        "baseOnBalls":    {"type": "both",     "label": "BB",  "active": True, "order": 6},
+        "inningsPitched": {"type": "pitching", "label": "IP",  "active": True, "order": 1},
+        "earnedRuns":     {"type": "pitching", "label": "ER",  "active": True, "order": 2},
+        "runs":           {"type": "pitching", "label": "R",   "active": True, "order": 3},
+    },
 }
 

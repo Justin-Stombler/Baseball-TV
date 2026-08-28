@@ -1,17 +1,21 @@
-from ..api.statcast_batting import (
+from ..api.savant import (
     fetch_hitter_expected_stats,
     fetch_pitcher_expected_stats,
     fetch_batter_exitvelo_barrels,
     fetch_pitcher_exitvelo_barrels,
     fetch_hitter_team_map,
     fetch_pitcher_team_map,
+    fetch_statcast_batter_bat_tracking
 )
 from ..api.player_stats import fetch_hitter_stats, fetch_pitcher_stats
+from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
+from ..api.pitch_data import fetch_statcast_pitcher_pitch_arsenal
 from ..constants import DATA_DIR
 from ..stats.percentiles import add_percentiles
 from ..stats.qualification import qualification_threshold
 import json
 import unicodedata
+import pandas as pd
 
 
 with open(DATA_DIR / "roster.json") as f:
@@ -64,27 +68,45 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
     exit_df = fetch_batter_exitvelo_barrels(season, min_bbe="0")
     team_df = fetch_hitter_team_map(season=season, player_pool='ALL')
     hitter_stats = fetch_hitter_stats(season=season, player_pool='ALL')
+    hitter_bat_tracking = fetch_statcast_batter_bat_tracking(season, min_swings="0")
+
+    hitter_bat_tracking.rename(columns={'id': 'player_id'}, inplace=True)
+
     babip_map = {
         p["player"]["id"]: p["stat"].get("babip")
         for p in hitter_stats
         if p["stat"].get("babip") is not None
     }
 
+    advanced_splits = fetch_advanced_hitting(season, player_pool='ALL')
+    whiff_map = {}
+    for p in advanced_splits:
+        s = p['stat']
+        swings = s.get('totalSwings') or 0
+        misses = s.get('swingAndMisses') or 0
+        whiff_map[p['player']['id']] = round(misses / swings * 100, 1) if swings > 0 else None
+
     ## merge on player_id so each hitter row gets exit velo/barrel data and roster metadata
     merged = hitter_df.merge(exit_df[['player_id', 'avg_hit_speed', 'brl_percent', 'avg_hit_angle', 'barrels', 'avg_distance']], on='player_id', how='left')
     merged = merged.merge(team_df[['player_id', 'team', 'position']], on='player_id', how='inner')
+    merged = merged.merge(hitter_bat_tracking[['player_id', 'avg_bat_speed']], on='player_id', how='left')
     ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
     ##renders (leaderboards use qualified_only separately and are unaffected).
     merged = merged[merged['player_id'].isin(rosters_by_id.keys())]
+    ##A pitcher with a rare pinch-hit PA can otherwise leak into this hitter pool with
+    ##position='P', which would trip is_pitcher() checks downstream despite having no
+    ##pitch-arsenal data of their own. TWP (true two-way players) are kept.
+    merged = merged[~merged['position'].isin(['P', 'SP', 'RP'])]
     merged['babip'] = merged['player_id'].map(babip_map)
     players = []
 
     for _, row in merged.iterrows():
+        pid = row.get('player_id')
         display_name = _display_name(row.get('last_name, first_name'))
         players.append({
-            'id': row.get('player_id'),
+            'id': pid,
             'name': display_name,
-            'number': _roster_number_for_name(display_name, row.get('player_id')),
+            'number': _roster_number_for_name(display_name, pid),
             'team': row.get('team'),
             'position': row.get('position'),
             'stats': {
@@ -102,6 +124,8 @@ def hitter_expected_transform(season: int = 2026, qualified_only: bool = True) -
                 'barrels':        row.get('barrels'),
                 'avg_distance':   row.get('avg_distance'),
                 'babip':          row.get('babip'),
+                'avg_bat_speed':  row.get('avg_bat_speed'),
+                'whiff_percent':  whiff_map.get(pid),
             }
         })
 
@@ -135,6 +159,36 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
         denom = ab - k - bb + sf
         babip_against_map[p["player"]["id"]] = round((h - hr) / denom, 3) if denom > 0 else None
 
+    advanced_splits = fetch_advanced_pitching(season, player_pool='ALL')
+    whiff_map = {}
+    for p in advanced_splits:
+        s = p['stat']
+        swings = s.get('totalSwings') or 0
+        misses = s.get('swingAndMisses') or 0
+        whiff_map[p['player']['id']] = round(misses / swings * 100, 1) if swings > 0 else None
+
+    ##Fastball velo = usage-weighted avg speed across the fastball family (4-seam, sinker/2-seam,
+    ##cutter) so a pitcher who mixes FF/SI isn't just scored on whichever one pybaseball lists first.
+    ##n_ff/n_si/n_fc are usage percentages (not raw counts), which is fine here since we only need
+    ##relative weighting, not the true pitch total.
+    speed_df = fetch_statcast_pitcher_pitch_arsenal(season, minP=1, arsenal_type="avg_speed")
+    usage_df = fetch_statcast_pitcher_pitch_arsenal(season, minP=1, arsenal_type="n_")
+    fastball_velo_map = {}
+    if speed_df is not None and not speed_df.empty and usage_df is not None and not usage_df.empty:
+        arsenal_df = speed_df.merge(usage_df, on='pitcher', how='inner')
+        fb_pitch_cols = [('ff_avg_speed', 'n_ff'), ('si_avg_speed', 'n_si'), ('fc_avg_speed', 'n_fc')]
+        for _, row in arsenal_df.iterrows():
+            weighted_sum = 0.0
+            total_weight = 0.0
+            for speed_col, usage_col in fb_pitch_cols:
+                speed = row.get(speed_col)
+                usage = row.get(usage_col)
+                if pd.notna(speed) and pd.notna(usage) and usage > 0:
+                    weighted_sum += speed * usage
+                    total_weight += usage
+            if total_weight > 0:
+                fastball_velo_map[int(row['pitcher'])] = round(weighted_sum / total_weight, 1)
+
     merged = pitcher_df.merge(
         pitcher_exit_df[['player_id', 'avg_hit_speed', 'brl_percent', 'avg_hit_angle', 'barrels', 'avg_distance']],
         on='player_id',
@@ -144,13 +198,18 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
     ##Only players on a current 40-man roster should ever reach the "all players" carousel/profile
     ##renders (leaderboards use qualified_only separately and are unaffected).
     merged = merged[merged['player_id'].isin(rosters_by_id.keys())]
+    ##Savant's own min_pa filter on fetch_pitcher_expected_stats doesn't reliably exclude position
+    ##players with a handful of mop-up pitching appearances (e.g. batters_faced=9), which would
+    ##otherwise leak into this pitcher pool and clobber their hitter entry in expected_stats_list().
+    merged = merged[merged['position'].isin(['SP', 'RP', 'TWP'])]
     merged['babip_against'] = merged['player_id'].map(babip_against_map)
     players = []
 
     for _, row in merged.iterrows():
+        pid = row.get('player_id')
         display_name = _display_name(row.get('last_name, first_name'))
         players.append({
-            'id': row.get('player_id'),
+            'id': pid,
             'name': display_name,
             'number': _roster_number_for_name(display_name, row.get('player_id')),
             'team': row.get('team'),
@@ -170,6 +229,8 @@ def pitcher_expected_transform(season: int = 2026, qualified_only: bool = True) 
                 'barrels': row.get('barrels'),
                 'avg_distance': row.get('avg_distance'),
                 'babip_against': row.get('babip_against'),
+                'whiff_percent_against': whiff_map.get(pid),
+                'fastball_velo': fastball_velo_map.get(pid),
             }
         })
 

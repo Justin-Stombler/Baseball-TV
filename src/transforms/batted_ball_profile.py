@@ -3,11 +3,51 @@
 ###the question here is which stats?
 
 from ..api.advanced_stats import fetch_advanced_hitting, fetch_advanced_pitching
-from .statcast_batting import expected_stats_list
+from ..api.pitch_data import fetch_statcast_batter_pitches, fetch_statcast_pitcher_pitches
+from .statcast_expected import expected_stats_list
 from ..stats.percentiles import add_percentiles
 from ..stats.qualification import filter_qualified
 from ..stats.pitcher_role import build_role_lookup
 from data.roster import is_rostered, get_team, get_jersey_number
+import numpy as np
+
+
+def spray_rates(player_id: int, is_pitcher: bool = False, season: int = 2026) -> dict:
+    """Fetch per-pitch Statcast data for a single player and return pull/straight/oppo rates
+    on balls in play. Only meant to be called for the one player currently being rendered
+    (mirrors the per-player movement fetch used in pitch_arsenal)."""
+    empty = {'pull_rate': None, 'straight_rate': None, 'oppo_rate': None}
+
+    fetch = fetch_statcast_pitcher_pitches if is_pitcher else fetch_statcast_batter_pitches
+    df = fetch(start_dt=f"{season}-03-01", end_dt=f"{season}-11-30", player_id=player_id)
+    if df is None or df.empty or 'hc_x' not in df.columns or 'hc_y' not in df.columns:
+        return empty
+
+    bip = df.dropna(subset=['hc_x', 'hc_y'])
+    if bip.empty:
+        return empty
+
+    ##Spray angle off home plate using the standard MLB Gameday coordinate origin (125.42, 198.27).
+    ##Negative = pull side, positive = oppo side, flipped for lefties so it's always relative to the batter.
+    angle = np.degrees(np.arctan2(bip['hc_x'] - 125.42, 198.27 - bip['hc_y']))
+    angle = np.where(bip.get('stand') == 'L', -angle, angle)
+
+    total = len(angle)
+    if total == 0:
+        return empty
+
+    return {
+        'pull_rate': (angle <= -15).sum() / total,
+        'straight_rate': ((angle > -15) & (angle < 15)).sum() / total,
+        'oppo_rate': (angle >= 15).sum() / total,
+    }
+
+
+def attach_spray_rates(player: dict, is_pitcher: bool = False, season: int = 2026) -> dict:
+    """Merge pull/straight/oppo rates into a single player's stats dict in place, returning it."""
+    player['stats'].update(spray_rates(player['id'], is_pitcher=is_pitcher, season=season))
+    return player
+
 
 def hitter_bb_profile(season: int = 2026, qualified_only: bool = True) -> list[dict]:
     """Transform hitter stats into a more usable format for stats rendering."""

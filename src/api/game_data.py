@@ -113,9 +113,51 @@ def fetch_live_game_state(game_id: int) -> dict:
         'men_on_base': men_on_base,
     }
 
+
+def fetch_player_recent_games(player_id: int, group: str = "hitting", season: int = 2026, count: int = 5) -> list[dict]:
+    """Fetch a player's most recent game log entries (most recent first).
+
+    ARGUMENTS
+        player_id: MLB player id.
+        group: "hitting" or "pitching".
+        season: season year to pull the game log from.
+        count: how many of the most recent games to return.
+
+    Returns an empty list if the player has no game log entries yet this season.
+    """
+    data = statsapi.get('people', {
+        'personIds': player_id,
+        'hydrate': f'stats(group=[{group}],type=[gameLog],season={season})',
+    })
+    people = data.get('people') or []
+    if not people:
+        return []
+
+    stats = people[0].get('stats') or []
+    splits = stats[0].get('splits') if stats else []
+    if not splits:
+        return []
+
+    ##gameLog splits come back oldest-first; take the most recent `count`, newest first
+    recent_splits = list(reversed(splits))[:count]
+    return [
+        {
+            'date': split.get('date'),
+            'opponent': (split.get('opponent') or {}).get('name'),
+            'is_home': split.get('isHome'),
+            'is_win': split.get('isWin'),
+            'stats': split.get('stat', {}),
+        }
+        for split in recent_splits
+    ]
+
+
 if __name__ == "__main__":
     game = fetch_team_game(147)  # Yankees
     print(game)
 
     today_game = fetch_team_game_today(147)
     print(today_game)
+
+    recent_games = fetch_player_recent_games(592450, group="hitting")  # Aaron Judge
+    print(recent_games)

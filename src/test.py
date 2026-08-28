@@ -9,21 +9,22 @@ from src.render.leaderboard import render_leaderboard
 from src.render.player_profiles import render_player_profiles
 from src.render.player_stats import render_player_stats
 from src.render.batted_ball_profile import render_batted_ball_profile
-from src.render.statcast_batting import render_statcast_data
+from src.render.statcast_expected import render_statcast_data
 from src.render.stings import render_sting, stings
 from src.render.team_leaderboard import render_team_leaderboard
-from src.render.expanded_team_profile import render_expanded_team_profile
+from src.render.team_profile import render_team_profile
 from src.render.pitch_arsenal import render_pitch_arsenal
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
 from src.render.box_score import render_division_box_scores
+from src.render.recent_appearances import render_recent_appearances
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
 from src.transforms.player_bios import bio_list
 from src.transforms.player_history import player_history
 from src.transforms.player_stats import player_list
 from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
-from src.transforms.statcast_batting import expected_stats_list
+from src.transforms.statcast_expected import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from src.transforms.team_profiles import generate_team_profile
 from src.transforms.pitch_arsenal import generate_pitch_arsenal
@@ -81,23 +82,23 @@ def run_player_stats_test(previous: str | None, group: str | None = None, team: 
     return current
 
 
-def run_statcast_batting_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
-    cfg = DISPLAY_CONFIG["statcast_batting"]
+def run_statcast_expected_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
+    cfg = DISPLAY_CONFIG["statcast_expected"]
     players = filter_players(expected_stats_list(), group, team)
     if not players:
-        print(f"No statcast_batting players available for group '{group}', team '{team}'. Try again.")
+        print(f"No statcast_expected players available for group '{group}', team '{team}'. Try again.")
         return previous
 
     if _rotation_player:
         player = {p["id"]: p for p in players}.get(_rotation_player["id"])
         if not player:
-            print(f"[statcast_batting] No data for rotation player {_rotation_player.get('name')} (id={_rotation_player.get('id')}). Skipping, keeping previous image.")
+            print(f"[statcast_expected] No data for rotation player {_rotation_player.get('name')} (id={_rotation_player.get('id')}). Skipping, keeping previous image.")
             return previous
     else:
         player = random.choice(players)
 
     current = display(render_statcast_data(player), cfg["duration"], previous=previous)
-    print("Pushed mode: statcast_batting")
+    print("Pushed mode: statcast_expected")
     return current
 
 
@@ -160,6 +161,40 @@ def run_player_profiles_test(previous: str | None, group: str | None = None, tea
     return current
 
 
+def run_recent_appearances_test(previous: str | None, group: str | None = None, team: str | None = None) -> str | None:
+    cfg = DISPLAY_CONFIG["recent_appearances"]
+    players = filter_players(player_list(), group, team)
+    if not players:
+        print(f"No recent_appearances players available for group '{group}', team '{team}'. Try again.")
+        return previous
+
+    bio_by_id = {b["id"]: b for b in bio_list()}
+    bio = None
+    player = None
+
+    if _rotation_player:
+        bio = bio_by_id.get(_rotation_player["id"])
+        player = _rotation_player
+        if not bio:
+            print(f"[recent_appearances] No bio for rotation player {_rotation_player.get('name')} (id={_rotation_player.get('id')}). Skipping, keeping previous image.")
+            return previous
+    else:
+        random.shuffle(players)
+        for candidate in players:
+            bio = bio_by_id.get(candidate["id"])
+            if bio:
+                player = candidate
+                break
+
+    if not bio:
+        print(f"No matching bio found for group '{group}', team '{team}'. Try again.")
+        return previous
+
+    current = display(render_recent_appearances(bio), cfg["duration"], previous=previous)
+    print("Pushed mode: recent_appearances")
+    return current
+
+
 def run_leaderboard_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["leaderboard"]
     active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]
@@ -195,15 +230,15 @@ def run_team_leaderboard_test(previous: str | None, group: str | None = None, te
     print(f"Pushed mode: team_leaderboard ({selected_team}, {stat})")
     return current
 
-def run_expanded_team_profile_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
+def run_team_profile_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["team_profiles"]
     profiles = generate_team_profile()
     if team:
         matching = [p for p in profiles if p.get("team_name") == team]
         profiles = matching or profiles
     selected = random.choice(profiles)
-    current = display(render_expanded_team_profile(selected), cfg["duration"], previous=previous)
-    print("Pushed mode: expanded_team_profile")
+    current = display(render_team_profile(selected), cfg["duration"], previous=previous)
+    print("Pushed mode: team_profile")
     return current
 
 def run_sting_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
@@ -295,16 +330,17 @@ def run_pitch_arsenal_test(previous: str | None, group: str | None = None, team:
 MODE_DISPATCH = {
     "1": ("stings", run_sting_test),
     "2": ("player_stats", run_player_stats_test),
-    "3": ("statcast_batting", run_statcast_batting_test),
+    "3": ("statcast_expected", run_statcast_expected_test),
     "4": ("batted_ball_profile", run_batted_ball_profile_test),
     "5": ("player_profiles", run_player_profiles_test),
     "6": ("leaderboard", run_leaderboard_test),
     "7": ("team_leaderboard", run_team_leaderboard_test),
     "8": ("division_standings", run_division_standings_test),
     "9": ("wildcard_standings", run_wildcard_standings_test),
-    "10": ("team_profiles", run_expanded_team_profile_test),
+    "10": ("team_profiles", run_team_profile_test),
     "11": ("pitch_arsenal", run_pitch_arsenal_test),
     "12": ("box_score", run_box_score_test),
+    "13": ("recent_appearances", run_recent_appearances_test),
 }
 
 
@@ -314,7 +350,7 @@ def choose_modes_group_team() -> tuple[list[str], str | None, str | None]:
         for key, (name, _) in MODE_DISPATCH.items():
             print(f"{key}) {name}")
         print("Optionally follow with a group (b=batters, p=pitchers) and/or a team abbreviation (e.g. bos, nyy).")
-        print("Modes 2-5 will attempt to use the same player when called and log if not possible")
+        print("Modes 2-5 and 13 will attempt to use the same player when called and log if not possible")
         raw_choice = input("Enter modes [group] [team] (e.g. '2, 3, 4, 5 b bos'): ").strip()
 
         # Split on any mix of commas and/or whitespace between tokens.

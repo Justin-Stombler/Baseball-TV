@@ -74,20 +74,29 @@ def _speed_and_spin_by_pitch(season: int) -> tuple[dict, dict]:
     return reshape(speed_df, "avg_speed"), reshape(spin_df, "avg_spin")
 
 
-def _movement_by_pitch(season: int, pitcher_id: int) -> dict:
+def _movement_by_pitch(season: int, pitcher_id: int) -> tuple[dict, float | None]:
     """Average horizontal (hb_in) / induced-vertical (ivb_in) break in inches, plus average
     plate location (loc_x_in / loc_z_in, inches from the center of the plate at the front of
     the zone), per pitch type, for one pitcher. This hits the pitch-by-pitch Statcast
     endpoint, so only call it for the pitcher actually being rendered, not every pitcher in
     the league.
+
+    Also returns overall (not per-pitch-type) average release extension in feet, reusing
+    this same pitch log rather than a second fetch.
     """
     movement_df = fetch_statcast_pitcher_pitches(
         start_dt=f"{season}-03-01", end_dt=f"{season}-11-30", player_id=pitcher_id
     )
     if movement_df is None or movement_df.empty:
-        return {}
+        return {}, None
+
+    extension_ft = None
+    if 'release_extension' in movement_df.columns:
+        ext_mean = movement_df['release_extension'].mean()
+        extension_ft = round(float(ext_mean), 1) if pd.notna(ext_mean) else None
+
     if not {'pitch_type', 'pfx_x', 'pfx_z'}.issubset(movement_df.columns):
-        return {}
+        return {}, extension_ft
 
     has_location = {'plate_x', 'plate_z'}.issubset(movement_df.columns)
     has_release = {'release_pos_x', 'release_pos_z'}.issubset(movement_df.columns)
@@ -143,7 +152,7 @@ def _movement_by_pitch(season: int, pitcher_id: int) -> dict:
                 (float(r['plate_x']) * 12.0, float(r['plate_z']) * 12.0 - 30.0)
                 for _, r in sampled.iterrows()
             ]
-    return movement
+    return movement, extension_ft
 
 
 def _add_speed_spin_percentiles(pitchers: list[dict]) -> None:
@@ -248,8 +257,9 @@ def generate_pitch_arsenal(
 
         movement = {}
         hand = None
+        extension_ft = None
         if include_movement and (target_player_id is None or pitcher_id == target_player_id):
-            movement = _movement_by_pitch(season, pitcher_id)
+            movement, extension_ft = _movement_by_pitch(season, pitcher_id)
             hand = _safe_fetch(lambda: fetch_player_hand(pitcher_id))
 
         arsenal = {}
@@ -293,6 +303,7 @@ def generate_pitch_arsenal(
             "position": position,
             "number": get_jersey_number(display_name, pitcher_id),
             "hand": hand,
+            "extension_ft": extension_ft,
             "arsenal": arsenal,
         })
 

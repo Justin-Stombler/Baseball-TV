@@ -7,10 +7,11 @@ DISPLAY_CONFIG = {
 
 ##player cycle
     "player_stats": {"duration": 5, "count": 3},
-    "statcast_batting": {"duration": 5, "count": 3},
+    "statcast_expected": {"duration": 5, "count": 3},
     "player_profiles": {"duration": 7, "count": 3, "seasons": 5},
     "batted_ball_profile": {"duration": 5, "count": 3},
     "pitch_arsenal": {"duration": 5, "count": 3},
+    "recent_appearances": {"duration": 7, "count": 3},
 
 ##team cycle
     "team_profiles": {"duration": 5, "count": 3},
