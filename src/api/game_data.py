@@ -34,12 +34,18 @@ def fetch_team_game_today(team_id: int) -> dict | None:
 
 
 def fetch_box_score(game_id: int) -> dict:
-    """Fetch inning-by-inning box score data for a single game."""
+    """Fetch inning-by-inning box score data, plus pitcher decisions, for a single game."""
     data = statsapi.get('game', {'gamePk': game_id})
+    raw_decisions = data['liveData'].get('decisions', {})
+    decisions = {
+        side: ({'name': raw_decisions[side]['fullName']} if raw_decisions.get(side) else None)
+        for side in ('winner', 'loser', 'save')
+    }
     return {
         'linescore': data['liveData']['linescore'],
         'home_name': data['gameData']['teams']['home']['name'],
         'away_name': data['gameData']['teams']['away']['name'],
+        'decisions': decisions,
         'status': data['gameData']['status']['detailedState'],
     }
 

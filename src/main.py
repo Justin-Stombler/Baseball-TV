@@ -8,7 +8,7 @@ from .transforms.statcast_expected import expected_stats_list
 from .transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from .transforms.team_profiles import generate_team_profile
 from .transforms.standings import generate_division_standings, generate_wild_card_standings
-from .transforms.box_score import generate_division_box_scores
+from .transforms.box_score import generate_box_score_pages
 from .transforms.pitch_arsenal import generate_pitch_arsenal
 from .render.player_stats import render_player_stats
 from .render.player_profiles import render_player_profiles
@@ -22,7 +22,7 @@ from .render.team_leaderboard import render_team_leaderboard
 from .render.team_profile import render_team_profile
 from .render.division_standings import render_division_standings
 from .render.wildcard_standings import render_wildcard_standings
-from .render.box_score import render_division_box_scores
+from .render.box_score import render_league_box_scores
 from .render.pitch_arsenal import render_pitch_arsenal
 from .push import push, delete
 from .config import DISPLAY_CONFIG
@@ -118,15 +118,16 @@ def run_film_cycle(previous: str | None) -> str | None:
     if bio:
         history_dict = player_history([bio], count=DISPLAY_CONFIG["player_profiles"].get("seasons"))
         bio = {**bio, 'history': history_dict.get(player['id'], [])}
-        try:
-            previous = display(render_player_profiles(bio), duration, previous, mode="player_profiles")
-        except Exception as e:
-            print(f"Error rendering profile for {bio.get('name')}: {e}")
 
         try:
             previous = display(render_recent_appearances(bio), duration, previous, mode="recent_appearances")
         except Exception as e:
             print(f"Error rendering recent appearances for {bio.get('name')}: {e}")
+
+        try:
+            previous = display(render_player_profiles(bio), duration, previous, mode="player_profiles")
+        except Exception as e:
+            print(f"Error rendering profile for {bio.get('name')}: {e}")
 
     active_stats = [k for k, v in STAT_CONFIG.items() if v.get("active", True)]
     stat = random.choice(active_stats)
@@ -147,8 +148,13 @@ def run_film_cycle(previous: str | None) -> str | None:
     standings = generate_division_standings(league="AL", division="East")
     previous = display(render_division_standings(standings=standings, division="East", league="AL"), duration, previous, mode="division_standings_AL")
 
-    games = generate_division_box_scores(league="AL", division="East")
-    previous = display(render_division_box_scores(games, division="East", league="AL"), duration, previous, mode="box_score_AL")
+    box_score_pages = generate_box_score_pages(per_page=DISPLAY_CONFIG["box_score"]["per_page"])
+    if box_score_pages:
+        page = box_score_pages[0]
+        previous = display(
+            render_league_box_scores(page["games"], league_group=page["league_group"], page=page["page"], total_pages=page["total_pages"]),
+            duration, previous, mode="box_score",
+        )
 
     profiles = generate_team_profile()
     if profiles:
@@ -195,8 +201,6 @@ if __name__ == "__main__":
 
     # Standings cycle: 0=AL divisions, 1=NL divisions, 2=wildcard
     standings_cycle = 0
-    # Box score cycle: 0=AL, 1=NL (independent of standings_cycle, so it'll drift out of sync)
-    box_score_cycle = 0
 
     while True:
             ##Load players and bios fresh for each cycle
@@ -249,17 +253,18 @@ if __name__ == "__main__":
                     # Generate history just-in-time for this one profile
                     history_dict = player_history([bio], count=history_count)
                     bio = {**bio, 'history': history_dict.get(player['id'], [])}
-                    try:
-                        profile_bytes = render_player_profiles(bio)
-                        previous = display(profile_bytes, pp["duration"], previous, mode="player_profiles")
-                    except Exception as e:
-                        print(f"Error rendering profile for {bio.get('name')}: {e}")
 
                     try:
                         ra_bytes = render_recent_appearances(bio)
                         previous = display(ra_bytes, ra["duration"], previous, mode="recent_appearances")
                     except Exception as e:
                         print(f"Error rendering recent appearances for {bio.get('name')}: {e}")
+
+                    try:
+                        profile_bytes = render_player_profiles(bio)
+                        previous = display(profile_bytes, pp["duration"], previous, mode="player_profiles")
+                    except Exception as e:
+                        print(f"Error rendering profile for {bio.get('name')}: {e}")
 
             for _ in range(stings_cfg["count"]):
                 sting_text = random.choice(stings)
@@ -320,15 +325,16 @@ if __name__ == "__main__":
 
             standings_cycle = (standings_cycle + 1) % 3
         
-            # Box score: alternate AL, NL each pass through the loop; always shows East/Central/West
-            box_score_league = "AL" if box_score_cycle == 0 else "NL"
-            divisions = ["East", "Central", "West"]
-            for division in divisions:
-                games = generate_division_box_scores(league=box_score_league, division=division)
-                previous = display(render_division_box_scores(games, division=division, league=box_score_league), bs["duration"], previous, mode=f"box_score_{box_score_league}")
-            print(f"Pushed mode: box_score ({box_score_league} East/Central/West)")
-
-            box_score_cycle = (box_score_cycle + 1) % 2
+            # Box scores: show every game for the day exactly once, grouped AL / NL /
+            # Interleague (by both teams' league) and paginated at bs["per_page"]
+            # games per card. Groups with no games (e.g. no interleague games today)
+            # are skipped entirely.
+            for page in generate_box_score_pages(per_page=bs["per_page"]):
+                previous = display(
+                    render_league_box_scores(page["games"], league_group=page["league_group"], page=page["page"], total_pages=page["total_pages"]),
+                    bs["duration"], previous, mode=f"box_score_{page['league_group']}",
+                )
+            print("Pushed mode: box_score (AL/NL/Interleague, all games)")
 
             for _ in range(stings_cfg["count"]):
                 sting_text = random.choice(stings)

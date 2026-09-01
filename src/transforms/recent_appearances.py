@@ -3,14 +3,8 @@ from ..stats.config import RECENT_APPEARANCES_CONFIG
 
 
 def recent_appearances_columns(group: str) -> list[tuple[str, str]]:
-    """Return the (stat_key, label) columns active for this group, sorted by "order"."""
-    active_stats = [
-        (stat_key, stat_config)
-        for stat_key, stat_config in RECENT_APPEARANCES_CONFIG["stats"].items()
-        if stat_config.get("active", True) and stat_config.get("type") in (group, "both")
-    ]
-    active_stats.sort(key=lambda item: item[1].get("order", 0))
-    return [(stat_key, stat_config["label"]) for stat_key, stat_config in active_stats]
+    """Return the (stat_key, label) columns for this group, in display order."""
+    return list(RECENT_APPEARANCES_CONFIG[group])
 
 
 def recent_appearances(player: dict, count: int | None = None, season: int = 2026) -> list[dict]:
@@ -25,7 +19,11 @@ def recent_appearances(player: dict, count: int | None = None, season: int = 202
     rows = []
     for game in games:
         stats = game.get("stats", {})
-        row = {"date": game.get("date"), "opponent": game.get("opponent")}
+        row = {
+            "date": game.get("date"),
+            "opponent": game.get("opponent"),
+            "is_home": game.get("is_home"),
+        }
         for key, _label in columns:
             row[key] = stats.get(key)
         rows.append(row)

@@ -18,7 +18,7 @@ DISPLAY_CONFIG = {
     "team_leaderboard": {"duration": 5, "count": 1, "stat_count": 2, "team_count": 3, "min_ab": 20, "min_ip": 10},
 
 ##league cycle
-    "box_score": {"duration": 7},
+    "box_score": {"duration": 7, "per_page": 3},
     "division_standings": {"duration": 5, "count": 3},
     "wildcard_standings": {"duration": 5, "count": 2},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},

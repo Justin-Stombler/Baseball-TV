@@ -89,22 +89,25 @@ HISTORY_CONFIG = {
 }
 
 ##controls both the row count and which stat columns show up for the
-##recent-appearances (per-game) table. add/remove a stat by adding a line
-##or flipping "active"; change how many games are shown by editing "games".
-##"order" controls left-to-right column position (lower = further left) —
-##change the number to reorder without moving lines around.
+##recent-appearances (per-game) table. each group lists (stat_key, label) in
+##left-to-right order; change how many games are shown by editing "games".
 RECENT_APPEARANCES_CONFIG = {
-    "games": 6,
-    "stats": {
-        "atBats":         {"type": "hitting",  "label": "AB",  "active": True, "order": 1},
-        "hits":           {"type": "both",     "label": "H",   "active": True, "order": 2},
-        "totalBases":     {"type": "hitting",  "label": "TB",  "active": True, "order": 3},
-        "rbi":            {"type": "hitting",  "label": "RBI", "active": True, "order": 4},
-        "strikeOuts":     {"type": "both",     "label": "K",   "active": True, "order": 5},
-        "baseOnBalls":    {"type": "both",     "label": "BB",  "active": True, "order": 6},
-        "inningsPitched": {"type": "pitching", "label": "IP",  "active": True, "order": 1},
-        "earnedRuns":     {"type": "pitching", "label": "ER",  "active": True, "order": 2},
-        "runs":           {"type": "pitching", "label": "R",   "active": True, "order": 3},
-    },
+    "games": 5,
+    "hitting": [
+        ("atBats", "AB"),
+        ("runs", "R"),
+        ("hits", "H"),
+        ("rbi", "RBI"),
+        ("baseOnBalls", "BB"),
+        ("strikeOuts", "K"),
+    ],
+    "pitching": [
+        ("inningsPitched", "IP"),
+        ("hits", "H"),
+        ("runs", "R"),
+        ("earnedRuns", "ER"),
+        ("baseOnBalls", "BB"),
+        ("strikeOuts", "K"),
+    ],
 }
 

@@ -16,7 +16,7 @@ from src.render.team_profile import render_team_profile
 from src.render.pitch_arsenal import render_pitch_arsenal
 from src.render.division_standings import render_division_standings
 from src.render.wildcard_standings import render_wildcard_standings
-from src.render.box_score import render_division_box_scores
+from src.render.box_score import render_league_box_scores
 from src.render.recent_appearances import render_recent_appearances
 from src.stats.config import STAT_CONFIG
 from src.transforms.leaderboard import generate_leaderboard
@@ -29,7 +29,7 @@ from src.transforms.team_leaderboard import generate_team_leaderboard, get_avail
 from src.transforms.team_profiles import generate_team_profile
 from src.transforms.pitch_arsenal import generate_pitch_arsenal
 from src.transforms.standings import generate_division_standings, generate_wild_card_standings
-from src.transforms.box_score import generate_division_box_scores
+from src.transforms.box_score import generate_box_score_pages
 
 # lowercase abbreviation (e.g. "bos") -> full team name (e.g. "Boston Red Sox")
 TEAM_BY_ABBREVIATION = {abbr.lower(): name for name, abbr in TEAM_ABBREVIATIONS.items()}
@@ -67,6 +67,38 @@ def filter_players(players: list[dict], group: str | None = None, team: str | No
 # instead of picking a new random player for each mode.
 _rotation_player: dict | None = None
 
+# Set at startup if the user typed a player name; when set, run_player_stats_test
+# uses this player instead of randomizing, keeping the whole rotation pinned to them.
+_locked_player_id: int | None = None
+
+# Modes that share the rotation player / can be locked to one player by name.
+_PLAYER_ROTATION_MODES = {"2", "3", "4", "5", "13"}
+
+
+def find_player_by_name(name: str) -> dict | None:
+    """Case-insensitive lookup of a player by full or partial name.
+    Prefers an exact match; otherwise picks the first partial match and
+    prints the other candidates so the user can be more specific next time."""
+    name = name.strip()
+    if not name:
+        return None
+
+    players = player_list()
+    lowered = name.lower()
+
+    exact = [p for p in players if str(p.get("name", "")).lower() == lowered]
+    if exact:
+        return exact[0]
+
+    partial = [p for p in players if lowered in str(p.get("name", "")).lower()]
+    if not partial:
+        print(f"No player found matching '{name}'.")
+        return None
+    if len(partial) > 1:
+        names = ", ".join(p["name"] for p in partial[:10])
+        print(f"Multiple players match '{name}': {names}. Using '{partial[0]['name']}'.")
+    return partial[0]
+
 
 def run_player_stats_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     global _rotation_player
@@ -75,7 +107,15 @@ def run_player_stats_test(previous: str | None, group: str | None = None, team: 
     if not players:
         print(f"No player_stats players available for group '{group}', team '{team}'. Try again.")
         return previous
-    player = random.choice(players)
+
+    if _locked_player_id is not None:
+        player = {p["id"]: p for p in players}.get(_locked_player_id)
+        if not player:
+            print(f"[player_stats] Locked player not available for group '{group}', team '{team}'. Skipping, keeping previous image.")
+            return previous
+    else:
+        player = random.choice(players)
+
     _rotation_player = player
     current = display(render_player_stats(player), cfg["duration"], previous=previous)
     print("Pushed mode: player_stats")
@@ -283,24 +323,31 @@ def run_wildcard_standings_test(previous: str | None, group: str | None = None, 
     return current
 
 
-# Cycles through all 6 divisions (AL/NL x East/Central/West) one call at a time.
-_BOX_SCORE_DIVISIONS = [(league, division) for league in ("AL", "NL") for division in ("East", "Central", "West")]
-
-
+# Cycles one box-score page at a time (AL, then NL, then Interleague pages);
+# refetches and rebuilds the full set of pages once the current set is exhausted.
 def run_box_score_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["box_score"]
+    pages = getattr(run_box_score_test, "_pages", None)
     index = getattr(run_box_score_test, "_next_index", 0)
-    league, division = _BOX_SCORE_DIVISIONS[index]
 
-    games = generate_division_box_scores(league=league, division=division)
+    if not pages or index >= len(pages):
+        pages = generate_box_score_pages(per_page=cfg["per_page"])
+        run_box_score_test._pages = pages
+        index = 0
+
+    if not pages:
+        print("No games found for any league group.")
+        return previous
+
+    entry = pages[index]
     current = display(
-        render_division_box_scores(games, division=division, league=league),
+        render_league_box_scores(entry["games"], league_group=entry["league_group"], page=entry["page"], total_pages=entry["total_pages"]),
         cfg["duration"],
         previous=previous,
     )
 
-    run_box_score_test._next_index = (index + 1) % len(_BOX_SCORE_DIVISIONS)
-    print(f"Pushed mode: box_score ({league} {division})")
+    run_box_score_test._next_index = index + 1
+    print(f"Pushed mode: box_score ({entry['league_group']} page {entry['page']}/{entry['total_pages']})")
     return current
 
 def run_pitch_arsenal_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
@@ -351,6 +398,7 @@ def choose_modes_group_team() -> tuple[list[str], str | None, str | None]:
             print(f"{key}) {name}")
         print("Optionally follow with a group (b=batters, p=pitchers) and/or a team abbreviation (e.g. bos, nyy).")
         print("Modes 2-5 and 13 will attempt to use the same player when called and log if not possible")
+        print("(you'll be asked next if you want to lock those modes to one player by name)")
         raw_choice = input("Enter modes [group] [team] (e.g. '2, 3, 4, 5 b bos'): ").strip()
 
         # Split on any mix of commas and/or whitespace between tokens.
@@ -387,7 +435,18 @@ def choose_modes_group_team() -> tuple[list[str], str | None, str | None]:
 
 
 def main() -> None:
+    global _rotation_player, _locked_player_id
     modes, group, team = choose_modes_group_team()
+
+    if any(mode in _PLAYER_ROTATION_MODES for mode in modes):
+        name_input = input("Lock modes 2-5/13 to one player by name (press Enter to skip): ").strip()
+        if name_input:
+            locked = find_player_by_name(name_input)
+            if locked:
+                _rotation_player = locked
+                _locked_player_id = locked["id"]
+                print(f"Locked rotation to: {locked['name']} ({locked.get('team')})")
+
     previous = None
 
     index = 0
