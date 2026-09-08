@@ -2,6 +2,6 @@ services:
   baseball-tv:
     build: .
     restart: always
-    command: ["python", "-m", "src.main", "--hot"]
+    command: ["python", "-m", "src.main"]
     env_file:
       - .env
