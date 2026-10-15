@@ -10,14 +10,9 @@ FONTS_DIR = PROJECT_ROOT / "fonts"
 
 ##game-day timezone/cutover, used anywhere "today's game" needs to be determined
 GAME_DAY_TIMEZONE = ZoneInfo("America/New_York")
-CUTOVER_TIME = dt_time(12, 30)  # before this ET time, keep showing the prior completed game
+CUTOVER_TIME = dt_time(12, 30)  ##at 12:30 it switches from previous finals to today's games
 
-##MLB's detailedState comes in many "Prefix: Reason" variants (e.g. "Delayed: Rain",
-##"Suspended: COVID-19", "Manager challenge: Tag play") that a flat set of exact
-##strings can't catch — classified by prefix instead so a reason suffix we haven't
-##hardcoded doesn't silently fall through to "no game" downstream. Order matters:
-##more specific prefixes (e.g. "Delayed Start") are checked before broader relatives
-##(e.g. "Delayed").
+
 UPCOMING_PREFIXES = ("Scheduled", "Pre-Game", "Warmup", "Delayed Start")
 FINAL_PREFIXES = ("Final", "Game Over", "Completed Early")
 LIVE_PREFIXES = (

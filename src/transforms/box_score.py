@@ -1,9 +1,10 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from ..api.game_data import fetch_team_game, fetch_box_score, fetch_team_game_today, fetch_live_game_state, fetch_probable_pitchers
+from ..api.game_data import fetch_team_game, fetch_box_score, fetch_team_game_today, fetch_games_today, fetch_live_game_state, fetch_probable_pitchers
 from ..api.team_performance import fetch_team_performance
 from ..constants import GAME_DAY_TIMEZONE, CUTOVER_TIME, classify_game_status
+from ..config import DISPLAY_CONFIG, POSTSEASON_GAME_TYPES
 
 
 def _ordinal_inning(n: int) -> str:
@@ -73,9 +74,9 @@ def _format_live_status(inning_state: str | None, current_inning: int | None) ->
     return f"{inning_state.upper()} {_ordinal_inning(current_inning)}"
 
 
-def _final_box_score(game_id: int, game_datetime: str | None) -> dict:
+def _final_box_score(game: dict) -> dict:
     """Build a 'final' box score row from a game's box score data."""
-    data = fetch_box_score(game_id)
+    data = fetch_box_score(game['game_id'])
     linescore = data['linescore']
 
     innings = []
@@ -92,11 +93,13 @@ def _final_box_score(game_id: int, game_datetime: str | None) -> dict:
     decisions = data.get('decisions', {})
 
     return {
-        'game_id': game_id,
+        'game_id': game['game_id'],
         'away_name': data['away_name'],
         'home_name': data['home_name'],
         'status': 'final',
-        'game_datetime': game_datetime,
+        'game_datetime': game.get('game_datetime'),
+        'game_type': game.get('game_type'),
+        'series_status': game.get('series_status'),
         'scheduled_innings': scheduled_innings,
         'innings': innings,
         'away_runs': away_totals.get('runs', 0),
@@ -116,7 +119,7 @@ def _completed_box_score(team_id: int) -> dict | None:
     game = fetch_team_game(team_id)
     if not game:
         return None
-    return _final_box_score(game['game_id'], game.get('game_datetime'))
+    return _final_box_score(game)
 
 
 def generate_box_score(team_id: int, team_name: str) -> dict | None:
@@ -143,6 +146,8 @@ def generate_box_score(team_id: int, team_name: str) -> dict | None:
                 'home_name': today_game['home_name'],
                 'status': 'upcoming',
                 'game_datetime': today_game.get('game_datetime'),
+                'game_type': today_game.get('game_type'),
+                'series_status': today_game.get('series_status'),
                 'away_probable': away_probable,
                 'home_probable': home_probable,
                 'first_pitch_display': _format_first_pitch(today_game.get('game_datetime')),
@@ -159,6 +164,8 @@ def generate_box_score(team_id: int, team_name: str) -> dict | None:
                 'home_name': state['home_name'],
                 'status': 'live',
                 'game_datetime': today_game.get('game_datetime'),
+                'game_type': today_game.get('game_type'),
+                'series_status': today_game.get('series_status'),
                 'scheduled_innings': state['scheduled_innings'],
                 'innings': state['innings'],
                 'away_runs': state['away_runs'],
@@ -169,16 +176,68 @@ def generate_box_score(team_id: int, team_name: str) -> dict | None:
                 'home_errors': state['home_errors'],
                 'current_inning': current_inning,
                 'inning_state': inning_state,
+                'pitcher': state.get('pitcher'),
+                'batter': state.get('batter'),
                 'status_display': _format_live_status(inning_state, current_inning),
             }
         if game_status == "final":
-            return _final_box_score(today_game['game_id'], today_game.get('game_datetime'))
+            return _final_box_score(today_game)
 
         ##today's game exists but isn't upcoming/live/final (e.g. postponed, cancelled,
         ##forfeited) — no fallback to an older game past the cutover
         return None
 
     return _completed_box_score(team_id)
+
+
+def _box_score_for_schedule_game(game: dict) -> dict | None:
+    """Build a box-score row for a game in the full daily schedule."""
+    game_status = classify_game_status(game['status'])
+    if game_status == "upcoming":
+        probables = fetch_probable_pitchers(game['game_id'])
+        away_probable = probables.get('away')
+        home_probable = probables.get('home')
+        return {
+            'game_id': game['game_id'],
+            'away_name': game['away_name'],
+            'home_name': game['home_name'],
+            'status': 'upcoming',
+            'game_datetime': game.get('game_datetime'),
+            'game_type': game.get('game_type'),
+            'series_status': game.get('series_status'),
+            'away_probable': away_probable,
+            'home_probable': home_probable,
+            'first_pitch_display': _format_first_pitch(game.get('game_datetime')),
+            'away_probable_display': _format_probable(away_probable),
+            'home_probable_display': _format_probable(home_probable),
+        }
+    if game_status == "live":
+        state = fetch_live_game_state(game['game_id'])
+        return {
+            'game_id': state['game_id'],
+            'away_name': state['away_name'],
+            'home_name': state['home_name'],
+            'status': 'live',
+            'game_datetime': game.get('game_datetime'),
+            'game_type': game.get('game_type'),
+            'series_status': game.get('series_status'),
+            'scheduled_innings': state['scheduled_innings'],
+            'innings': state['innings'],
+            'away_runs': state['away_runs'],
+            'away_hits': state['away_hits'],
+            'away_errors': state['away_errors'],
+            'home_runs': state['home_runs'],
+            'home_hits': state['home_hits'],
+            'home_errors': state['home_errors'],
+            'current_inning': state.get('current_inning'),
+            'inning_state': state.get('inning_state'),
+            'pitcher': state.get('pitcher'),
+            'batter': state.get('batter'),
+            'status_display': _format_live_status(state.get('inning_state'), state.get('current_inning')),
+        }
+    if game_status == "final":
+        return _final_box_score(game)
+    return None
 
 
 def _bucket_games_by_league() -> dict[str, list[dict]]:
@@ -226,11 +285,40 @@ def paginate_box_scores(games: list[dict], per_page: int) -> list[list[dict]]:
     """Split a list of games into pages of at most `per_page` games each."""
     return [games[i:i + per_page] for i in range(0, len(games), per_page)]
 
-
 def generate_box_score_pages(per_page: int) -> list[dict]:
     """Build every league group's box-score pages for the day, in AL -> NL ->
     Interleague order (groups with no games are skipped entirely). Each entry is
-    ready to render+display in sequence: {league_group, games, page, total_pages}."""
+    ready to render+display in sequence: {league_group, games, page, total_pages}.
+
+    When automatic postseason detection is enabled, today's games are grouped
+    and paginated by the game type returned by MLB's schedule.
+    """
+    if DISPLAY_CONFIG["box_score"].get("auto_detect_postseason", True):
+        games_by_type = {game_type: [] for game_type in POSTSEASON_GAME_TYPES}
+        for schedule_game in fetch_games_today():
+            game_type = schedule_game.get('game_type')
+            if game_type not in games_by_type:
+                continue
+            box_score = _box_score_for_schedule_game(schedule_game)
+            if box_score:
+                games_by_type[game_type].append(box_score)
+
+        postseason_pages = []
+        for game_type, round_name in POSTSEASON_GAME_TYPES.items():
+            games = games_by_type[game_type]
+            if not games:
+                continue
+            game_pages = paginate_box_scores(games, per_page)
+            for page_num, page_games in enumerate(game_pages, start=1):
+                postseason_pages.append({
+                    'league_group': round_name,
+                    'games': page_games,
+                    'page': page_num,
+                    'total_pages': len(game_pages),
+                })
+        if postseason_pages:
+            return postseason_pages
+
     grouped = _bucket_games_by_league()
 
     pages = []

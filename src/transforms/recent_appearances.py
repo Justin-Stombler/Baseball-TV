@@ -12,6 +12,7 @@ def recent_appearances(player: dict, count: int | None = None, season: int = 202
     following the same shape as the player-profile history table but keyed
     to individual games instead of seasons."""
     count = count if count is not None else RECENT_APPEARANCES_CONFIG["games"]
+    season = player.get("season", season)
     group = "pitching" if player.get("position") in ("SP", "RP", "P", "TWP") else "hitting"
     columns = recent_appearances_columns(group)
     games = fetch_player_recent_games(player["id"], group=group, season=season, count=count)
@@ -23,6 +24,8 @@ def recent_appearances(player: dict, count: int | None = None, season: int = 202
             "date": game.get("date"),
             "opponent": game.get("opponent"),
             "is_home": game.get("is_home"),
+            "game_type": game.get("game_type"),
+            "round": game.get("round"),
         }
         for key, _label in columns:
             row[key] = stats.get(key)

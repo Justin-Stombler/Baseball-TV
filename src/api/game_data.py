@@ -1,6 +1,7 @@
 import statsapi
 from datetime import datetime, timedelta
 from ..constants import GAME_DAY_TIMEZONE
+from ..config import POSTSEASON_GAME_TYPES
 
 
 def fetch_team_game(team_id: int) -> dict | None:
@@ -31,6 +32,12 @@ def fetch_team_game_today(team_id: int) -> dict | None:
     ##prefer the latest game_num in case of doubleheaders
     games.sort(key=lambda g: g.get('game_num', 1))
     return games[-1]
+
+
+def fetch_games_today() -> list[dict]:
+    """Fetch today's full MLB schedule, including postseason round and series status."""
+    today = datetime.now(GAME_DAY_TIMEZONE).strftime('%m/%d/%Y')
+    return statsapi.schedule(date=today)
 
 
 def fetch_box_score(game_id: int) -> dict:
@@ -131,31 +138,41 @@ def fetch_player_recent_games(player_id: int, group: str = "hitting", season: in
 
     Returns an empty list if the player has no game log entries yet this season.
     """
-    data = statsapi.get('people', {
-        'personIds': player_id,
-        'hydrate': f'stats(group=[{group}],type=[gameLog],season={season})',
-    })
-    people = data.get('people') or []
-    if not people:
-        return []
+    game_types = {"R": None, **POSTSEASON_GAME_TYPES}
+    splits_by_game_id = {}
 
-    stats = people[0].get('stats') or []
-    splits = stats[0].get('splits') if stats else []
-    if not splits:
-        return []
+    for game_type, round_name in game_types.items():
+        game_type_filter = f",gameType={game_type}" if round_name else ""
+        data = statsapi.get('people', {
+            'personIds': player_id,
+            'hydrate': f'stats(group=[{group}],type=[gameLog],season={season}{game_type_filter})',
+        })
+        people = data.get('people') or []
+        if not people:
+            continue
 
-    ##gameLog splits come back oldest-first; take the most recent `count`, newest first
-    recent_splits = list(reversed(splits))[:count]
-    return [
-        {
-            'date': split.get('date'),
-            'opponent': (split.get('opponent') or {}).get('name'),
-            'is_home': split.get('isHome'),
-            'is_win': split.get('isWin'),
-            'stats': split.get('stat', {}),
-        }
-        for split in recent_splits
-    ]
+        stats_groups = people[0].get('stats') or []
+        splits = stats_groups[0].get('splits') if stats_groups else []
+        for split in splits or []:
+            game_id = (split.get('game') or {}).get('gamePk')
+            if game_id is None:
+                continue
+            splits_by_game_id[game_id] = {
+                'date': split.get('date'),
+                'opponent': (split.get('opponent') or {}).get('name'),
+                'is_home': split.get('isHome'),
+                'is_win': split.get('isWin'),
+                'game_type': game_type,
+                'round': round_name,
+                'stats': split.get('stat', {}),
+            }
+
+    recent_games = sorted(
+        splits_by_game_id.values(),
+        key=lambda game: game.get('date') or '',
+        reverse=True,
+    )
+    return recent_games[:count]
 
 
 if __name__ == "__main__":

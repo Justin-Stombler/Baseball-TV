@@ -18,7 +18,12 @@ DISPLAY_CONFIG = {
     "team_leaderboard": {"duration": 5, "count": 1, "stat_count": 2, "team_count": 3, "min_ab": 20, "min_ip": 10},
 
 ##league cycle
-    "box_score": {"duration": 7, "per_page": 3},
+    # Automatically focus today's games during any postseason round.
+    "box_score": {
+        "duration": 10,
+        "per_page": 3,
+        "auto_detect_postseason": True,
+    },
     "division_standings": {"duration": 5, "count": 3},
     "wildcard_standings": {"duration": 5, "count": 2},
     "leaderboard":  {"duration": 5, "count": 3, "leagues": ["AL", "NL"]},
@@ -29,6 +34,19 @@ DISPLAY_CONFIG = {
 ##this is what baseball savant uses
 ##player_leaderboards will not use this so as to mirror official leaderboards
 ##players that can be chosen in the player cycle will
+POSTSEASON_GAME_TYPES = {
+    "F": "Wild Card Series",
+    "D": "Division Series",
+    "L": "Championship Series",
+    "W": "World Series",
+}
+POSTSEASON_ROUND_ABBREVIATIONS = {
+    "F": "WC",
+    "D": "DS",
+    "L": "CS",
+    "W": "WS",
+}
+
 QUALIFICATION_CONFIG = {
     "HITTER": 2.1,
     "PITCHER": 1.25
