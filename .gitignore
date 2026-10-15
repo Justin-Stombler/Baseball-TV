@@ -8,14 +8,23 @@
 /.venv
 
 .env
+.env.*
+!.env.example
 
-fonts/
+fonts/*
+!fonts/JetBrainsMono-*.ttf
 logos/
 
 *.txt
+!requirements.txt
+!THIRD_PARTY_NOTICES.txt
+!fonts/OFL.txt
 
-# docker
-.dockerignore
+# Local credentials
+*.pem
+*.key
+*.p12
+*.pfx
 
 __pycache__/
 *.pyc

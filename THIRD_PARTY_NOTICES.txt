@@ -1,0 +1,21 @@
+Third-party assets and data
+==========================
+
+JetBrains Mono
+--------------
+The JetBrains Mono fonts in fonts/ are by the JetBrains Mono Project Authors
+and are distributed under the SIL Open Font License, Version 1.1.
+The copyright notice and full license are included in fonts/OFL.txt.
+Upstream: https://github.com/JetBrains/JetBrainsMono
+
+MLB logos and data
+------------------
+setup_files/fetch_logos.py downloads team logos from MLB-hosted endpoints.
+The application also uses MLB Stats API and Baseball Savant data.
+MLB and team names, marks, and logos belong to their respective owners.
+Access to these endpoints does not itself grant redistribution rights.
+Review the applicable provider terms before redistributing downloaded assets
+or data. This project is not affiliated with or endorsed by MLB or its teams.
+
+These notices do not grant a license to the project's original source code
+or replace the licenses and terms of its third-party dependencies.
