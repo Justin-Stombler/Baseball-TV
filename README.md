@@ -78,3 +78,9 @@ As such, a non-exhaustive list of just some of the considerations I've put into 
 - Live Box Scores had to be designed to handle any number of cases, including extra innings, rainouts, and teams who don't list probable starters. Additonally, a * was added so the viewer knows that a half inning is current live.
 - X and Y data for pitch location had to be averaged, but also normalized so I could make sure it fit the image of the to-scale strikezone I created.
 - The batted ball profile uses colored cones set to the exact angles for each hit type as described by MLB's statistics glossary.
+
+#### *See Me Live!*
+
+Using the link below, you can access a Youtube Video designed to help you get a sense of both the scale of the project, and its functionalities.
+
+[youtu.be/U9X71sG-Pi0](https://youtu.be/U9X71sG-Pi0)
