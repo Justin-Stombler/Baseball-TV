@@ -76,3 +76,5 @@ As such, a non-exhaustive list of just some of the considerations I've put into 
 - FIP is not available via either of the APIs I have used, but I wanted it for the Tema Profiles. So I pulled the Fangraphs formula and reverse engineered the 2026 constant to ensure my hand-calculated FIP always matches that reported elsewhere.
 - The player bio screen is a direct homage to the baseball cards of my youth, hence the traditional counting stats and biographical information. It is also designed intentionally to mimic a baseball card.
 - Live Box Scores had to be designed to handle any number of cases, including extra innings, rainouts, and teams who don't list probable starters. Additonally, a * was added so the viewer knows that a half inning is current live.
+- X and Y data for pitch location had to be averaged, but also normalized so I could make sure it fit the image of the to-scale strikezone I created.
+- The batted ball profile uses colored cones set to the exact angles for each hit type as described by MLB's statistics glossary.
