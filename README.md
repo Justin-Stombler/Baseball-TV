@@ -1,3 +1,4 @@
+
 ## Baseball-TV
 
 Hi! I'm Justin, and I have been building this little Baseball TV as a personal project to both whet my ravenous appetite for baseball knowledge and show off my skills in repository and dataset setup and design. Back in 2020, I began learning Python and SQL during lockdown using baseball data as my main catalyst, and it quickly became an obsession. I pushed myself both technically and creatively, keeping a blog to this day at www.sevenyardsback.com. I was extremely fortuante to have these efforts pay off, as I began landing my first analyst roles. As I move onto the next chapter of my professional career and look to advance my skillset even further, this felt like a fantastic next opportunity.
@@ -86,6 +87,8 @@ Using the link below, you can access a Youtube Video designed to help you get a 
 [youtu.be/U9X71sG-Pi0](https://youtu.be/U9X71sG-Pi0)
 
 #### *Album*
+
+Please note that these pictures do not necessarily reflect final UI development.
 
 <img src="docs/images/album/IMG_9233.jpg" alt="Baseball TV photo 1" width="45%">
 <img src="docs/images/album/IMG_9236.jpg" alt="Baseball TV photo 2" width="45%">
