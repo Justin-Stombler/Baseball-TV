@@ -24,6 +24,7 @@ from src.transforms.player_bios import bio_list
 from src.transforms.player_history import player_history
 from src.transforms.player_stats import player_list
 from src.transforms.batted_ball_profile import player_list as batted_ball_player_list
+from src.transforms.batted_ball_profile import attach_spray_rates
 from src.transforms.statcast_expected import expected_stats_list
 from src.transforms.team_leaderboard import generate_team_leaderboard, get_available_teams
 from src.transforms.team_profiles import generate_team_profile
@@ -61,8 +62,8 @@ def filter_players(players: list[dict], group: str | None = None, team: str | No
     return players
 
 
-# Shared "anchor" player for the player-card modes (2-5). run_player_stats_test sets
-# it fresh each time it runs; the other three modes reuse it if their dataset has a
+# Shared "anchor" player for the player-card modes (2-5, 11, 13). run_player_stats_test sets
+# it fresh each time it runs; the other modes reuse it if their dataset has a
 # matching player, so selecting e.g. "2 3 4 5" rotates through one player's cards
 # instead of picking a new random player for each mode.
 _rotation_player: dict | None = None
@@ -72,7 +73,7 @@ _rotation_player: dict | None = None
 _locked_player_id: int | None = None
 
 # Modes that share the rotation player / can be locked to one player by name.
-_PLAYER_ROTATION_MODES = {"2", "3", "4", "5", "13"}
+_PLAYER_ROTATION_MODES = {"2", "3", "4", "5", "11", "13"}
 
 
 def find_player_by_name(name: str) -> dict | None:
@@ -157,6 +158,7 @@ def run_batted_ball_profile_test(previous: str | None, group: str | None = None,
     else:
         player = random.choice(players)
 
+    player = attach_spray_rates(player, is_pitcher=player.get("position") in ("P", "SP", "RP", "TWP"))
     current = display(render_batted_ball_profile(player), cfg["duration"], previous=previous)
     print("Pushed mode: batted_ball_profile")
     return current
@@ -353,6 +355,25 @@ def run_box_score_test(previous: str | None, group: str | None = None, team: str
 def run_pitch_arsenal_test(previous: str | None, group: str | None = None, team: str | None = None) -> str:
     cfg = DISPLAY_CONFIG["pitch_arsenal"]
 
+    if _rotation_player:
+        if _rotation_player.get("position") not in ("P", "SP", "RP", "TWP"):
+            print(f"[pitch_arsenal] Rotation player {_rotation_player.get('name')} is not a pitcher. Skipping, keeping previous image.")
+            return previous
+        pitchers = generate_pitch_arsenal(
+            player_id=_rotation_player["id"],
+            qualified_only=False,
+            include_movement=True,
+        )
+        if team:
+            pitchers = [p for p in pitchers if p.get("team") == team]
+        if not pitchers:
+            print(f"[pitch_arsenal] No data for rotation player {_rotation_player.get('name')} (id={_rotation_player.get('id')}) for team '{team}'. Skipping, keeping previous image.")
+            return previous
+        player = pitchers[0]
+        current = display(render_pitch_arsenal(player), cfg["duration"], previous=previous)
+        print("Pushed mode: pitch_arsenal (pitcher)")
+        return current
+
     if group == "hitter":
         print("pitch_arsenal is pitcher-only; ignoring hitter group filter.")
 
@@ -397,7 +418,7 @@ def choose_modes_group_team() -> tuple[list[str], str | None, str | None]:
         for key, (name, _) in MODE_DISPATCH.items():
             print(f"{key}) {name}")
         print("Optionally follow with a group (b=batters, p=pitchers) and/or a team abbreviation (e.g. bos, nyy).")
-        print("Modes 2-5 and 13 will attempt to use the same player when called and log if not possible")
+        print("Modes 2-5, 11, and 13 will attempt to use the same player when called and log if not possible")
         print("(you'll be asked next if you want to lock those modes to one player by name)")
         raw_choice = input("Enter modes [group] [team] (e.g. '2, 3, 4, 5 b bos'): ").strip()
 
@@ -439,7 +460,7 @@ def main() -> None:
     modes, group, team = choose_modes_group_team()
 
     if any(mode in _PLAYER_ROTATION_MODES for mode in modes):
-        name_input = input("Lock modes 2-5/13 to one player by name (press Enter to skip): ").strip()
+        name_input = input("Lock modes 2-5/11/13 to one player by name (press Enter to skip): ").strip()
         if name_input:
             locked = find_player_by_name(name_input)
             if locked:
