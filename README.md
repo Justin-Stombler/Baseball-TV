@@ -73,7 +73,7 @@ As such, a non-exhaustive list of just some of the considerations I've put into 
 - Additionally, only players who are actually qualified for league leaderboards are able to show up on the league leaderboards. However, for team-specific leaderboards the Baseball Savant approach was taken, where a picher must have 1.25 innings per games played, and a batter 2.1 at bats. This allows the lesser konwn players on a team (especially relievers) to be able to appear in images.
 - I came up with my own suite of pitch abbreviations and color choices for the pitch arsenal screen, which took me back to my days playing MVP Baseball 05.
 - There is a file that pulls in the hex colors of each team, and their primary and secondary colors always make an apperance in the player-specific screen to match the team they play for.
-- FIP is not available via either of the APIs I have used, but I wanted it for the Tema Profiles. So I pulled the Fangraphs formula and reverse engineered the 2026 constant to ensure my hand-calculated FIP always matches that reported elsewhere.
+- FIP is not available via either of the APIs I have used, but I wanted it for the Team Profiles. So I pulled the Fangraphs formula and reverse engineered the 2026 constant to ensure my hand-calculated FIP always matches that reported elsewhere.
 - The player bio screen is a direct homage to the baseball cards of my youth, hence the traditional counting stats and biographical information. It is also designed intentionally to mimic a baseball card.
 - Live Box Scores had to be designed to handle any number of cases, including extra innings, rainouts, and teams who don't list probable starters. Additonally, a * was added so the viewer knows that a half inning is current live.
 - X and Y data for pitch location had to be averaged, but also normalized so I could make sure it fit the image of the to-scale strikezone I created.
@@ -84,3 +84,14 @@ As such, a non-exhaustive list of just some of the considerations I've put into 
 Using the link below, you can access a Youtube Video designed to help you get a sense of both the scale of the project, and its functionalities.
 
 [youtu.be/U9X71sG-Pi0](https://youtu.be/U9X71sG-Pi0)
+
+#### *Album*
+
+<img src="docs/images/album/IMG_9233.jpg" alt="Baseball TV photo 1" width="45%">
+<img src="docs/images/album/IMG_9236.jpg" alt="Baseball TV photo 2" width="45%">
+<img src="docs/images/album/IMG_9238.jpg" alt="Baseball TV photo 3" width="45%">
+<img src="docs/images/album/IMG_9239.jpg" alt="Baseball TV photo 4" width="45%">
+<img src="docs/images/album/IMG_9240.jpg" alt="Baseball TV photo 5" width="45%">
+<img src="docs/images/album/IMG_9241.jpg" alt="Baseball TV photo 6" width="45%">
+<img src="docs/images/album/IMG_9242.jpg" alt="Baseball TV photo 7" width="45%">
+<img src="docs/images/album/IMG_9248.jpg" alt="Baseball TV photo 8" width="45%">

@@ -33,4 +33,6 @@ __pycache__/
 
 ##ensuring read me isn't caught
 !readme.md
-docs/images
+docs/images/*
+!docs/images/album/
+!docs/images/album/*.jpg
