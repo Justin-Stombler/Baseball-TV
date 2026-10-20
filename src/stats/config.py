@@ -66,6 +66,16 @@ STAT_CONFIG = {
     'fastball_velo':        {"ascending": False, "type": "pitching",  "agg": "rate", "label": "FB. VELO", "active": False, "team_leaderboard_active": True},
 }
 
+PLAYER_STATS_CONFIG = {
+    "hitting": ["avg", "obp", "ops", "homeRuns", "rbi"],
+    "pitching": ["inningsPitched", "era", "whip", "homeRunsPer9", "strikeoutsPer9Inn"],
+}
+
+STATCAST_STATS_CONFIG = {
+    "hitting": ["avg_bat_speed", "barrel_rate", "whiff_percent", "xba", "babip"],
+    "pitching": ["fastball_velo", "barrel_rate_against", "whiff_percent_against", "xera", "babip_against"],
+}
+
 HISTORY_CONFIG = {
     "seasons": 5,
     "stats": {
@@ -86,6 +96,34 @@ HISTORY_CONFIG = {
         "pitchingStrikeOuts": {"type": "pitching", "label": "K", "active": True},
         "era": {"type": "pitching", "label": "ERA", "active": True},
     }
+}
+
+# Stat display metadata and comparison direction for the team profile card.
+TEAM_PROFILE_CONFIG = {
+    "hitting": [
+        {"key": "runs_scored", "label": "RUNS FOR"},
+        {"key": "team_avg", "label": "AVG", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_slg", "label": "SLG", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_obp", "label": "OBP", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_ops", "label": "OPS", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_home_runs", "label": "HR"},
+        {"key": "team_batting_strikeouts", "label": "SO", "higher_is_better": False},
+        {"key": "team_walks", "label": "BB"},
+        {"key": "team_total_bases", "label": "TB"},
+        {"key": "team_stolen_bases", "label": "SB"},
+    ],
+    "defense": [
+        {"key": "runs_allowed", "label": "RUNS AGA.", "higher_is_better": False},
+        {"key": "team_era", "label": "ERA", "decimals": 2, "higher_is_better": False},
+        {"key": "team_whip", "label": "WHIP", "decimals": 3, "higher_is_better": False},
+        {"key": "team_fip", "label": "FIP", "decimals": 2, "higher_is_better": False},
+        {"key": "team_save_pct", "label": "SV%", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_home_runs_allowed", "label": "HR", "higher_is_better": False},
+        {"key": "team_strikeouts", "label": "SO"},
+        {"key": "team_pitching_walks", "label": "BB", "higher_is_better": False},
+        {"key": "team_fielding_pct", "label": "FLD%", "decimals": 3, "strip_leading_zero": True},
+        {"key": "team_errors", "label": "E", "higher_is_better": False},
+    ],
 }
 
 ##controls both the row count and which stat columns show up for the
@@ -110,4 +148,3 @@ RECENT_APPEARANCES_CONFIG = {
         ("strikeOuts", "K"),
     ],
 }
-
