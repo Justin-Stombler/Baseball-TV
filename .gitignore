@@ -11,6 +11,8 @@
 .env.*
 !.env.example
 .renderer-token
+/src/render
+/data/visuals
 
 fonts/*
 !fonts/JetBrainsMono-*.ttf

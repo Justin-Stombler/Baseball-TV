@@ -8,32 +8,19 @@ Hi! I'm Justin, and I have been building this little Baseball TV as a personal p
 
 Nothing here is written by AI. Is that a pro? Is that a con? I'm not yet sure but at least you know.
 
-#### *Introduction*
+#### *Device Introduction and Code Restrictions*
 
 Rotating Baseball Stat Visualization Host, currently optimized for 240x240 screens.
 
 Photos upload to the device via API and delete themselves upon upload of the next round. The carousel and calls into the renderer are controlled in `src/main.py`.
 
-The public repository contains the data pipeline and the application's entry point. The screen-rendering implementation and its custom visual assets are maintained in the private companion repository [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source). The public `src.main` imports the renderer using the same `src.render` paths; Docker supplies those modules and assets at build time, so the render calls in `main.py` remain intact.
+The public repository contains the data pipeline and the application's entry point. The screen-rendering implementation and its custom visual assets are maintained in the private companion repository [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source), so as to keep the code behind my UI for myself.
+
+The public `src.main` imports the renderer using the same `src.render` paths; Docker supplies those modules and assets at build time, so the render calls in `main.py` remain intact.
 
 If you would like to be given access to the render and UI code, please feel free to contact me.
 
-#### *Build and Run*
-
-The full application is built with Docker and requires read access to the private renderer repository. Create a fine-grained GitHub token limited to `Baseball-TV-design-source` with **Contents: Read-only** permission. Save only the token in a local `.renderer-token` file at the project root; do not put it in `.env`, pass it as a build argument, or commit it. The repository ignores this secret file.
-
-Then create `.env` from `.env.example`, set the device address, and build/start the container:
-
-```sh
-cp .env.example .env
-# Set DEVICE_IP in .env and save your read-only GitHub token in .renderer-token.
-docker compose up -d --build
-docker compose logs -f baseball-tv
-```
-
-The token is mounted as a BuildKit secret only while Docker fetches the private renderer; it is not passed to the running container or baked into the image. The built image contains the renderer, so keep the image private. Once built, the container can restart without GitHub credentials; rebuilding requires the token again. Directly running `python -m src.main` from this public checkout alone is not supported because the renderer is private.
-
-To update the renderer, commit and push its changes to the private repo's `renderer` branch, update the pinned commit in the public `Dockerfile`, then rebuild and verify the device display.
+#### *Project Introduction*
 
 In general, this project has been put together for three reasons:
 
@@ -131,7 +118,20 @@ Using the link below, you can access a YouTube video designed to help you get a 
 
 #### *Photos - Final UI*
 
-Selected flattened screen captures can go here as portfolio previews; editable design files and renderer implementation remain in the private companion repository.
+<img src="docs/images/album/IMG_9589.jpg" alt="Baseball TV final UI photo 1" width="45%">
+<img src="docs/images/album/IMG_9590.jpg" alt="Baseball TV final UI photo 2" width="45%">
+<img src="docs/images/album/IMG_9591.jpg" alt="Baseball TV final UI photo 3" width="45%">
+<img src="docs/images/album/IMG_9592.jpg" alt="Baseball TV final UI photo 4" width="45%">
+<img src="docs/images/album/IMG_9593.jpg" alt="Baseball TV final UI photo 5" width="45%">
+<img src="docs/images/album/IMG_9598.jpg" alt="Baseball TV final UI photo 6" width="45%">
+<img src="docs/images/album/IMG_9599.jpg" alt="Baseball TV final UI photo 7" width="45%">
+<img src="docs/images/album/IMG_9600.jpg" alt="Baseball TV final UI photo 8" width="45%">
+<img src="docs/images/album/IMG_9601.jpg" alt="Baseball TV final UI photo 9" width="45%">
+<img src="docs/images/album/IMG_9602.jpg" alt="Baseball TV final UI photo 10" width="45%">
+<img src="docs/images/album/IMG_9603.jpg" alt="Baseball TV final UI photo 11" width="45%">
+<img src="docs/images/album/IMG_9604.jpg" alt="Baseball TV final UI photo 12" width="45%">
+<img src="docs/images/album/IMG_9605.jpg" alt="Baseball TV final UI photo 13" width="45%">
+<img src="docs/images/album/IMG_9606.jpg" alt="Baseball TV final UI photo 14" width="45%">
 
 #### *Photos - Prototype*
 

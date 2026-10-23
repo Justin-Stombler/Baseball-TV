@@ -4,6 +4,8 @@
 **/.env.*
 **/.renderer-token
 **/.private-renderer-staging
+/src/render
+/data/visuals
 **/.venv
 **/venv
 **/__pycache__
