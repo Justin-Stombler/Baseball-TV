@@ -16,6 +16,8 @@ Photos upload to the device via API and delete themselves upon upload of the nex
 
 The public repository contains the data pipeline and the application's entry point. The screen-rendering implementation and its custom visual assets are maintained in the private companion repository [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source). The public `src.main` imports the renderer using the same `src.render` paths; Docker supplies those modules and assets at build time, so the render calls in `main.py` remain intact.
 
+If you would like to be given access to the render and UI code, please feel free to contact me.
+
 #### *Build and Run*
 
 The full application is built with Docker and requires read access to the private renderer repository. Create a fine-grained GitHub token limited to `Baseball-TV-design-source` with **Contents: Read-only** permission. Save only the token in a local `.renderer-token` file at the project root; do not put it in `.env`, pass it as a build argument, or commit it. The repository ignores this secret file.
@@ -127,11 +129,11 @@ Using the link below, you can access a YouTube video designed to help you get a 
 
 [youtu.be/U9X71sG-Pi0](https://youtu.be/U9X71sG-Pi0)
 
-#### *Design Sources and Portfolio Previews*
+#### *Photos - Final UI*
 
-Editable design sources and renderer implementation are maintained in the private [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source) repository. This public repository may include selected flattened screen captures in `docs/images/previews/` to show the finished results; those are presentation previews, not editable design files. The existing photos below show the physical prototype and may not reflect final UI development.
+Selected flattened screen captures can go here as portfolio previews; editable design files and renderer implementation remain in the private companion repository.
 
-#### *Physical Prototype Photos*
+#### *Photos - Prototype*
 
 <img src="docs/images/album/IMG_9233.jpg" alt="Baseball TV photo 1" width="45%">
 <img src="docs/images/album/IMG_9236.jpg" alt="Baseball TV photo 2" width="45%">
