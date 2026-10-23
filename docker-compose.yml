@@ -1,7 +1,15 @@
 services:
   baseball-tv:
-    build: .
+    build:
+      context: .
+      secrets:
+        - source: renderer_github_token
+          target: github_token
     restart: always
     command: ["python", "-m", "src.main"]
     env_file:
       - .env
+
+secrets:
+  renderer_github_token:
+    file: .renderer-token

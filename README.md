@@ -12,7 +12,26 @@ Nothing here is written by AI. Is that a pro? Is that a con? I'm not yet sure bu
 
 Rotating Baseball Stat Visualization Host, currently optimized for 240x240 screens.
 
-Photos upload to screen's device via API and delete themselves upon upload of the next round, order is controlled in main.py.
+Photos upload to the device via API and delete themselves upon upload of the next round. The carousel and calls into the renderer are controlled in `src/main.py`.
+
+The public repository contains the data pipeline and the application's entry point. The screen-rendering implementation and its custom visual assets are maintained in the private companion repository [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source). The public `src.main` imports the renderer using the same `src.render` paths; Docker supplies those modules and assets at build time, so the render calls in `main.py` remain intact.
+
+#### *Build and Run*
+
+The full application is built with Docker and requires read access to the private renderer repository. Create a fine-grained GitHub token limited to `Baseball-TV-design-source` with **Contents: Read-only** permission. Save only the token in a local `.renderer-token` file at the project root; do not put it in `.env`, pass it as a build argument, or commit it. The repository ignores this secret file.
+
+Then create `.env` from `.env.example`, set the device address, and build/start the container:
+
+```sh
+cp .env.example .env
+# Set DEVICE_IP in .env and save your read-only GitHub token in .renderer-token.
+docker compose up -d --build
+docker compose logs -f baseball-tv
+```
+
+The token is mounted as a BuildKit secret only while Docker fetches the private renderer; it is not passed to the running container or baked into the image. The built image contains the renderer, so keep the image private. Once built, the container can restart without GitHub credentials; rebuilding requires the token again. Directly running `python -m src.main` from this public checkout alone is not supported because the renderer is private.
+
+To update the renderer, commit and push its changes to the private repo's `renderer` branch, update the pinned commit in the public `Dockerfile`, then rebuild and verify the device display.
 
 In general, this project has been put together for three reasons:
 
@@ -24,11 +43,11 @@ In general, this project has been put together for three reasons:
 
 While this pipeline does not output into a source system, so to say, this is still very much written with my knowledge of both ETL and DataVault concepts in mind.
 
-There are 3 distinct layers at play here.
+The public code contains the raw-data and transform layers. The UI rendering layer is kept in the private companion repository and is copied into the Docker image during the authenticated build.
 
 1. The 'raw' layer. This raw data is called via both the statsapi library wrapper for the MLB's official API and the pybaseball library for Baseball Savant metrics. Here, data is returned in a JSON structure for information in the current season for any batting, pitching, biographic, roster, or game state information I am interested in.
-2. The 'transform' layer. The preceding JSONs are then stripped of data deemed unneccesary for the visualization and/or cleaned as required. These will also pull in from the static data folder to add a player's jersey numbers and team abbreviations, so the render layer can use those dynamically.
-3. The 'render' layer. This layer is merely a collection of functions that contain shapes drawn with the Pillow Python Image Library (PIL), combined with dynamically called data from the transform layer as requested. These functions, when called in main.py, populate with data and create the images displayed on the screen one by one using push.py. These are then deleted after being shown, to prevent the device from overflowing (only holds 2MB roughly).
+2. The 'transform' layer. The preceding JSONs are then stripped of data deemed unneccesary for visualization and/or cleaned as required. These also pull in static data to add player jersey numbers and team abbreviations.
+3. The private 'render' layer uses transformed data to create the images uploaded by the public application. `src/main.py` retains the calls to the renderer; the Docker image provides its implementation and required assets.
 
 The images themselves and the various details they can show are largely controlled in the config files.
 
@@ -108,9 +127,11 @@ Using the link below, you can access a YouTube video designed to help you get a 
 
 [youtu.be/U9X71sG-Pi0](https://youtu.be/U9X71sG-Pi0)
 
-#### *Album*
+#### *Design Sources and Portfolio Previews*
 
-Please note that these pictures do not necessarily reflect final UI development.
+Editable design sources and renderer implementation are maintained in the private [Baseball-TV-design-source](https://github.com/Justin-Stombler/Baseball-TV-design-source) repository. This public repository may include selected flattened screen captures in `docs/images/previews/` to show the finished results; those are presentation previews, not editable design files. The existing photos below show the physical prototype and may not reflect final UI development.
+
+#### *Physical Prototype Photos*
 
 <img src="docs/images/album/IMG_9233.jpg" alt="Baseball TV photo 1" width="45%">
 <img src="docs/images/album/IMG_9236.jpg" alt="Baseball TV photo 2" width="45%">

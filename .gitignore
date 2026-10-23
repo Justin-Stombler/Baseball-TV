@@ -10,6 +10,7 @@
 .env
 .env.*
 !.env.example
+.renderer-token
 
 fonts/*
 !fonts/JetBrainsMono-*.ttf
@@ -36,3 +37,8 @@ __pycache__/
 docs/images/*
 !docs/images/album/
 !docs/images/album/*.jpg
+!docs/images/previews/
+!docs/images/previews/*.jpg
+!docs/images/previews/*.jpeg
+!docs/images/previews/*.png
+!docs/images/previews/*.webp
