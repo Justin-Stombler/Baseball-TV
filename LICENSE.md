@@ -5,7 +5,7 @@ GitHub's Terms of Service. No other license is granted to copy,
 modify, distribute, publish, sell, or otherwise reuse this
 repository's original code, visual designs, or other original
 materials without prior written permission. For permission requests,
-contact Justin at jmstombler@gmail.com.
+contact me at jmstombler@gmail.com.
 
 Third-party materials: team names, logos, and other marks shown in
 this project are the property of their respective owners (including
